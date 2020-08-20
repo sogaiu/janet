@@ -178,8 +178,8 @@ static int rawmode(void) {
     t.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     t.c_cflag |= (CS8);
     t.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-    t.c_cc[VMIN] = 1;
-    t.c_cc[VTIME] = 0;
+    t.c_cc[VMIN] = 0;
+    t.c_cc[VTIME] = 1;
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &t) < 0) goto fatal;
     gbl_israwmode = 1;
     return 0;
@@ -758,8 +758,14 @@ static int line() {
     for (;;) {
         char c;
         char seq[3];
+        char skip = 0;
 
-        if (read(STDIN_FILENO, &c, 1) <= 0) return -1;
+        if (!skip) {
+          skip = 0;
+          ssize_t res = read(STDIN_FILENO, &c, 1);
+          if (res == 0) continue;
+          if (res < 0) return -1;
+        }
 
         switch (c) {
             default:
@@ -814,7 +820,15 @@ static int line() {
                 break;
             case 13:    /* enter */
                 clearlines();
-                return 0;
+                ssize_t res = read(STDIN_FILENO, &c, 1);
+                if (res == 1) {
+                  skip = 1;
+                  break;
+                } else if (res == 0) {
+                  return 0;
+                } else {
+                  return -1;
+                }
             case 14: /* ctrl-n */
                 historymove(-1);
                 break;
