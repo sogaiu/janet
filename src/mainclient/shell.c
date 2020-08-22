@@ -758,14 +758,10 @@ static int line() {
     for (;;) {
         char c;
         char seq[3];
-        char skip = 0;
 
-        if (!skip) {
-          skip = 0;
-          ssize_t res = read(STDIN_FILENO, &c, 1);
-          if (res == 0) continue;
-          if (res < 0) return -1;
-        }
+        ssize_t res = read(STDIN_FILENO, &c, 1);
+        if (res == 0) continue;
+        if (res < 0) return -1;
 
         switch (c) {
             default:
@@ -819,16 +815,26 @@ static int line() {
                 refresh();
                 break;
             case 13:    /* enter */
-                clearlines();
-                ssize_t res = read(STDIN_FILENO, &c, 1);
-                if (res == 1) {
-                  skip = 1;
-                  break;
-                } else if (res == 0) {
-                  return 0;
-                } else {
-                  return -1;
+                if (insert(c, 0)) return -1;
+                fputc('\n', stdout);
+                ssize_t res;
+                for (;;) {
+                  res = read(STDIN_FILENO, &c, 1);
+                  if (res == 0) {
+                    break;
+                  } else if (res < 0) {
+                    return -1;
+                  }
+                  // XXX: should check c's value before calling insert
+                  if (c == 13) {
+                    if (insert(c, 0)) return -1;
+                    fputc('\n', stdout);
+                  } else {
+                    if (insert(c, 1)) return -1;
+                  }
                 }
+                clearlines();
+                return 0;
             case 14: /* ctrl-n */
                 historymove(-1);
                 break;
