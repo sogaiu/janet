@@ -151,6 +151,7 @@ DEF_PARSER_STACK(_pushstate, JanetParseState, states, statecount, statecap)
 #define PFLAG_ATSYM 0x10000
 #define PFLAG_COMMENT 0x20000
 #define PFLAG_TOKEN 0x40000
+#define PFLAG_BACKSLASH 0x80000
 
 static void pushstate(JanetParser *p, Consumer consumer, int flags) {
     JanetParseState s;
@@ -506,6 +507,22 @@ static int longstring(JanetParser *p, JanetParseState *state, uint8_t c) {
 
 static int root(JanetParser *p, JanetParseState *state, uint8_t c);
 
+static int backslash(JanetParser *p, JanetParseState *state, uint8_t c) {
+    (void) state;
+    p->statecount--;
+    switch (c) {
+        case ',':
+            // XXX: treat as whitespace
+            return 1;
+        default:
+            break;
+    }
+    // XXX: not sure if this makes sense
+    pushstate(p, tokenchar, PFLAG_TOKEN);
+    push_buf(p, '\\'); /* Push the leading backslash that was dropped */
+    return 0;
+}
+
 static int atsign(JanetParser *p, JanetParseState *state, uint8_t c) {
     (void) state;
     p->statecount--;
@@ -544,6 +561,9 @@ static int root(JanetParser *p, JanetParseState *state, uint8_t c) {
             }
             pushstate(p, tokenchar, PFLAG_TOKEN);
             return 0;
+        case '\\':
+            pushstate(p, backslash, PFLAG_BACKSLASH);
+            return 1;
         case '\'':
         case ',':
         case ';':
