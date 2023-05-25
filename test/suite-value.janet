@@ -21,38 +21,12 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Denormal tables
-
-(assert (= (length @{1 2 nil 3}) 1) "nil key table literal")
-(assert (= (length (table 1 2 nil 3)) 1) "nil key table ctor")
-
-(assert (= (length (table (/ 0 0) 2 1 3)) 1) "nan key table ctor")
-(assert (= (length @{1 2 (/ 0 0) 3}) 1) "nan key table literal")
-
-(assert (= (length (table 2 1 3 nil)) 1) "nil value table ctor")
-(assert (= (length @{1 2 3 nil}) 1) "nil value table literal")
-
-# Table duplicate elements
-(assert (deep= @{:a 3 :b 2} @{:a 1 :b 2 :a 3}) "table literal duplicate keys")
-(assert (deep= @{:a 3 :b 2} (table :a 1 :b 2 :a 3))
-        "table constructor duplicate keys")
-
-## Table prototypes
-
-(def roottab @{
- :parentprop 123
-})
-
-(def childtab @{
- :childprop 456
-})
-
-(table/setproto childtab roottab)
-
-(assert (= 123 (get roottab :parentprop)) "table get 1")
-(assert (= 123 (get childtab :parentprop)) "table get proto")
-(assert (= nil (get roottab :childprop)) "table get 2")
-(assert (= 456 (get childtab :childprop)) "proto no effect")
+(def test-struct {'def 1 'bork 2 'sam 3 'a 'b 'het @[1 2 3 4 5]})
+(assert (= (get test-struct 'def) 1) "struct get")
+(assert (= (get test-struct 'bork) 2) "struct get")
+(assert (= (get test-struct 'sam) 3) "struct get")
+(assert (= (get test-struct 'a) 'b) "struct get")
+(assert (= :array (type (get test-struct 'het))) "struct get")
 
 (end-suite)
 

@@ -21,8 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-(assert (not false) "false literal")
-(assert (not nil) "nil literal")
+(assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
 
 (end-suite)
 

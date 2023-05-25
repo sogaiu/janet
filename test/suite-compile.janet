@@ -24,4 +24,15 @@
 # Regression Test
 (assert (= 1 (((compile '(fn [] 1) @{})))) "regression test")
 
+# Fix a compiler bug in the do special form - 3e1e258
+
+(defn myfun [x]
+  (var a 10)
+  (set a (do
+         (def y x)
+         (if x 8 9))))
+
+(assert (= (myfun true) 8) "check do form regression")
+(assert (= (myfun false) 9) "check do form regression")
+
 (end-suite)

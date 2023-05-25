@@ -21,38 +21,32 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Denormal tables
+# More fiber semantics
 
-(assert (= (length @{1 2 nil 3}) 1) "nil key table literal")
-(assert (= (length (table 1 2 nil 3)) 1) "nil key table ctor")
+(var myvar 0)
+(defn fiberstuff [&]
+  (++ myvar)
+  (def f (fiber/new (fn [&] (++ myvar) (debug) (++ myvar))))
+  (resume f)
+  (++ myvar))
 
-(assert (= (length (table (/ 0 0) 2 1 3)) 1) "nan key table ctor")
-(assert (= (length @{1 2 (/ 0 0) 3}) 1) "nan key table literal")
+(def myfiber (fiber/new fiberstuff :dey))
 
-(assert (= (length (table 2 1 3 nil)) 1) "nil value table ctor")
-(assert (= (length @{1 2 3 nil}) 1) "nil value table literal")
+(assert (= myvar 0) "fiber creation does not call fiber function")
+(resume myfiber)
+(assert (= myvar 2) "fiber debug statement breaks at proper point")
+(assert (= (fiber/status myfiber) :debug) "fiber enters debug state")
+(resume myfiber)
+(assert (= myvar 4) "fiber resumes properly from debug state")
+(assert (= (fiber/status myfiber) :dead) "fiber properly dies from debug state")
 
-# Table duplicate elements
-(assert (deep= @{:a 3 :b 2} @{:a 1 :b 2 :a 3}) "table literal duplicate keys")
-(assert (deep= @{:a 3 :b 2} (table :a 1 :b 2 :a 3))
-        "table constructor duplicate keys")
-
-## Table prototypes
-
-(def roottab @{
- :parentprop 123
-})
-
-(def childtab @{
- :childprop 456
-})
-
-(table/setproto childtab roottab)
-
-(assert (= 123 (get roottab :parentprop)) "table get 1")
-(assert (= 123 (get childtab :parentprop)) "table get proto")
-(assert (= nil (get roottab :childprop)) "table get 2")
-(assert (= 456 (get childtab :childprop)) "proto no effect")
+# Fix yields inside nested fibers - 909c906
+(def yielder
+  (coro
+    (defer (yield :end)
+      (repeat 5 (yield :item)))))
+(def items (seq [x :in yielder] x))
+(assert (deep= @[:item :item :item :item :item :end] items) "yield within nested fibers")
 
 (end-suite)
 

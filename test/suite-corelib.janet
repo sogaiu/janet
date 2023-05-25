@@ -65,5 +65,9 @@
 (assert (= 0xFF (bxor 0x0F 0xF0)) "bit xor")
 (assert (= 0xF0 (bxor 0xFF 0x0F)) "bit xor 2")
 
+# Some testing for not=
+(assert (not= 1 1 0) "not= 1")
+(assert (not= 0 1 1) "not= 2")
+
 (end-suite)
 

@@ -69,7 +69,8 @@
 (assert (compare<= 1 2 3 3 4 5 6) "compare less than or equal to integers")
 (assert (compare<= 1.0 2.0 3.0 3.0 4.0 5.0 6.0)
         "compare less than or equal to reals")
-(assert (compare>= 6 5 4 4 3 2 1) "compare greater than or equal to integers")
+(assert (compare>= 6 5 4 4 3 2 1)
+        "compare greater than or equal to integers")
 (assert (compare>= 6.0 5.0 4.0 4.0 3.0 2.0 1.0)
         "compare greater than or equal to reals")
 (assert (compare< 1.0 nil false true
@@ -121,8 +122,10 @@
        [3 (int/s64 3) 0] [3 (int/s64 4) -1] [3 (int/s64 -5) 1]
        [3 (int/u64 3) 0] [3 (int/u64 4) -1] [3 (int/u64 2) 1]
        [(int/s64 MAX_INT_64_STRING) (int/u64 MAX_UINT_64_STRING) -1]
-       [(int/s64 MAX_INT_IN_DBL_STRING) (scan-number MAX_INT_IN_DBL_STRING) 0]
-       [(int/u64 MAX_INT_IN_DBL_STRING) (scan-number MAX_INT_IN_DBL_STRING) 0]
+       [(int/s64 MAX_INT_IN_DBL_STRING)
+        (scan-number MAX_INT_IN_DBL_STRING) 0]
+       [(int/u64 MAX_INT_IN_DBL_STRING)
+        (scan-number MAX_INT_IN_DBL_STRING) 0]
        [(+ 1 (int/u64 MAX_INT_IN_DBL_STRING))
         (scan-number MAX_INT_IN_DBL_STRING) 1]
        [(int/s64 0) INF -1] [(int/u64 0) INF -1]
@@ -141,6 +144,121 @@
 (assert (= true
            (any? [nil nil false nil nil true nil nil nil nil false :a nil]))
         "any? 6")
+
+# Some higher order functions and macros
+
+(def my-array @[1 2 3 4 5 6])
+(def x (if-let [x (get my-array 5)] x))
+(assert (= x 6) "if-let")
+(def x (if-let [y (get @{} :key)] 10 nil))
+(assert (not x) "if-let 2")
+
+(assert (= 14 (sum (map inc @[1 2 3 4]))) "sum map")
+(def myfun (juxt + - * /))
+(assert (= [2 -2 2 0.5] (myfun 2)) "juxt")
+
+# Case statements
+(assert
+  (= :six (case (+ 1 2 3)
+            1 :one
+            2 :two
+            3 :three
+            4 :four
+            5 :five
+            6 :six
+            7 :seven
+            8 :eight
+            9 :nine)) "case macro")
+
+(assert (= 7 (case :a :b 5 :c 6 :u 10 7)) "case with default")
+
+# Testing the seq, catseq, and loop macros
+(def xs (apply tuple (seq [x :range [0 10] :when (even? x)]
+                       (tuple (/ x 2) x))))
+(assert (= xs '((0 0) (1 2) (2 4) (3 6) (4 8))) "seq macro 1")
+
+(def xs (apply tuple (seq [x :down [8 -2] :when (even? x)]
+                       (tuple (/ x 2) x))))
+(assert (= xs '((4 8) (3 6) (2 4) (1 2) (0 0))) "seq macro 2")
+
+(def xs (catseq [x :range [0 3]] [x x]))
+(assert (deep= xs @[0 0 1 1 2 2]) "catseq")
+
+# :range-to and :down-to
+(assert (deep= (seq [x :range-to [0 10]] x) (seq [x :range [0 11]] x))
+        "loop :range-to")
+(assert (deep= (seq [x :down-to [10 0]] x) (seq [x :down [10 -1]] x))
+        "loop :down-to")
+
+# Even and odd
+
+(assert (odd? 9) "odd? 1")
+(assert (odd? -9) "odd? 2")
+(assert (not (odd? 10)) "odd? 3")
+(assert (not (odd? 0)) "odd? 4")
+(assert (not (odd? -10)) "odd? 5")
+(assert (not (odd? 1.1)) "odd? 6")
+(assert (not (odd? -0.1)) "odd? 7")
+(assert (not (odd? -1.1)) "odd? 8")
+(assert (not (odd? -1.6)) "odd? 9")
+
+(assert (even? 10) "even? 1")
+(assert (even? -10) "even? 2")
+(assert (even? 0) "even? 3")
+(assert (not (even? 9)) "even? 4")
+(assert (not (even? -9)) "even? 5")
+(assert (not (even? 0.1)) "even? 6")
+(assert (not (even? -0.1)) "even? 7")
+(assert (not (even? -10.1)) "even? 8")
+(assert (not (even? -10.6)) "even? 9")
+
+# Map arities
+(assert (deep= (map inc [1 2 3]) @[2 3 4]))
+(assert (deep= (map + [1 2 3] [10 20 30]) @[11 22 33]))
+(assert (deep= (map + [1 2 3] [10 20 30] [100 200 300]) @[111 222 333]))
+(assert (deep= (map + [1 2 3] [10 20 30] [100 200 300] [1000 2000 3000])
+               @[1111 2222 3333]))
+(assert (deep= (map +
+                    [1 2 3] [10 20 30] [100 200 300] [1000 2000 3000]
+                    [10000 20000 30000])
+               @[11111 22222 33333]))
+
+# Mapping uses the shortest sequence
+(assert (deep= (map + [1 2 3 4] [10 20 30]) @[11 22 33]))
+(assert (deep= (map + [1 2 3 4] [10 20 30] [100 200]) @[111 222]))
+(assert (deep= (map + [1 2 3 4] [10 20 30] [100 200] [1000]) @[1111]))
+
+(assert (= false (deep-not= [1] [1])) "issue #1149")
+
+# Sort function
+(assert (deep=
+          (range 99)
+          (sort (mapcat (fn [[x y z]] [z y x]) (partition 3 (range 99)))))
+        "sort 5")
+(assert (<= ;(sort (map (fn [x] (math/random)) (range 1000)))) "sort 6")
+
+# And and or
+
+(assert (= (and true true) true) "and true true")
+(assert (= (and true false) false) "and true false")
+(assert (= (and false true) false) "and false true")
+(assert (= (and true true true) true) "and true true true")
+(assert (= (and 0 1 2) 2) "and 0 1 2")
+(assert (= (and 0 1 nil) nil) "and 0 1 nil")
+(assert (= (and 1) 1) "and 1")
+(assert (= (and) true) "and with no arguments")
+(assert (= (and 1 true) true) "and with trailing true")
+(assert (= (and 1 true 2) 2) "and with internal true")
+
+(assert (= (or true true) true) "or true true")
+(assert (= (or true false) true) "or true false")
+(assert (= (or false true) true) "or false true")
+(assert (= (or false false) false) "or false true")
+(assert (= (or true true false) true) "or true true false")
+(assert (= (or 0 1 2) 0) "or 0 1 2")
+(assert (= (or nil 1 2) 1) "or nil 1 2")
+(assert (= (or 1) 1) "or 1")
+(assert (= (or) nil) "or with no arguments")
 
 (end-suite)
 

@@ -21,7 +21,18 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+(assert (not false) "false literal")
+(assert true "true literal")
+(assert (not nil) "nil literal")
+
 (assert (= '(1 2 3) (quote (1 2 3)) (tuple 1 2 3)) "quote shorthand")
+
+# Long strings
+
+(assert (= "hello, world" `hello, world`) "simple long string")
+(assert (= "hello, \"world\"" `hello, "world"`) "long string with embedded quotes")
+(assert (= "hello, \\\\\\ \"world\"" `hello, \\\ "world"`)
+        "long string with embedded quotes and backslashes")
 
 (end-suite)
 

@@ -21,8 +21,6 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-(assert true "true literal")
-
 # Set global variables to prevent some possible compiler optimizations
 # that defeat point of the test
 (var zero 0)
@@ -235,6 +233,65 @@
 (def dynamicdef2 1)
 (assert (= 2 (dynamicdef2-inc)) "after redefinition with dyn :redef")
 (setdyn :redef nil)
+
+# 027b2a8
+
+(defn assert-many [f n e]
+ (var good true)
+ (loop [i :range [0 n]]
+  (if (not (f))
+   (set good false)))
+ (assert good e))
+
+(assert-many (fn [] (>= 1 (math/random) 0)) 200 "(random) between 0 and 1")
+
+# Test max triangle program
+
+# Find the maximum path from the top (root)
+# of the triangle to the leaves of the triangle.
+
+(defn myfold [xs ys]
+  (let [xs1 [;xs 0]
+        xs2 [0 ;xs]
+        m1 (map + xs1 ys)
+        m2 (map + xs2 ys)]
+    (map max m1 m2)))
+
+(defn maxpath [t]
+ (extreme > (reduce myfold () t)))
+
+# Test it
+# Maximum path is 3 -> 10 -> 3 -> 9 for a total of 25
+
+(def triangle '[
+ [3]
+ [7 10]
+ [4 3 7]
+ [8 9 1 3]
+])
+
+(assert (= (maxpath triangle) 25) `max triangle`)
+
+# Large functions
+(def manydefs (seq [i :range [0 300]] (tuple 'def (gensym) (string "value_" i))))
+(array/push manydefs (tuple * 10000 3 5 7 9))
+(def f (compile ['do ;manydefs] (fiber/getenv (fiber/current))))
+(assert (= (f) (* 10000 3 5 7 9)) "long function compilation")
+
+# Closure in while loop
+(def closures (seq [i :range [0 5]] (fn [] i)))
+(assert (= 0 ((get closures 0))) "closure in loop 0")
+(assert (= 1 ((get closures 1))) "closure in loop 1")
+(assert (= 2 ((get closures 2))) "closure in loop 2")
+(assert (= 3 ((get closures 3))) "closure in loop 3")
+(assert (= 4 ((get closures 4))) "closure in loop 4")
+
+# More numerical tests
+(assert (= 1 1.0) "numerical equal 1")
+(assert (= 0 0.0) "numerical equal 2")
+(assert (= 0 -0.0) "numerical equal 3")
+(assert (= 2_147_483_647 2_147_483_647.0) "numerical equal 4")
+(assert (= -2_147_483_648 -2_147_483_648.0) "numerical equal 5")
 
 (end-suite)
 
