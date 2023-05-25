@@ -315,5 +315,65 @@
 
 (assert (= 4 (unless false (+ 1 2 3) 4)) "unless")
 
+# take
+
+(assert (deep= (take 0 []) []) "take 1")
+(assert (deep= (take 10 []) []) "take 2")
+(assert (deep= (take 0 [1 2 3 4 5]) []) "take 3")
+(assert (deep= (take 10 [1 2 3]) [1 2 3]) "take 4")
+(assert (deep= (take -1 [:a :b :c]) []) "take 5")
+(assert (deep= (take 3 (generate [x :in [1 2 3 4 5]] x)) @[1 2 3])
+        "take from fiber")
+# NB: repeatedly resuming a fiber created with `generate` includes a `nil`
+# as the final element. Thus a generate of 2 elements will create an array
+# of 3.
+(assert (= (length (take 4 (generate [x :in [1 2]] x))) 2)
+        "take from short fiber")
+
+# take-until
+
+(assert (deep= (take-until pos? @[]) []) "take-until 1")
+(assert (deep= (take-until pos? @[1 2 3]) []) "take-until 2")
+(assert (deep= (take-until pos? @[-1 -2 -3]) [-1 -2 -3]) "take-until 3")
+(assert (deep= (take-until pos? @[-1 -2 3]) [-1 -2]) "take-until 4")
+(assert (deep= (take-until pos? @[-1 1 -2]) [-1]) "take-until 5")
+(assert (deep= (take-until |(= $ 115) "books") "book") "take-until 6")
+(assert (deep= (take-until |(= $ 115) (generate [x :in "books"] x))
+               @[98 111 111 107]) "take-until from fiber")
+
+# take-while
+
+(assert (deep= (take-while neg? @[]) []) "take-while 1")
+(assert (deep= (take-while neg? @[1 2 3]) []) "take-while 2")
+(assert (deep= (take-while neg? @[-1 -2 -3]) [-1 -2 -3]) "take-while 3")
+(assert (deep= (take-while neg? @[-1 -2 3]) [-1 -2]) "take-while 4")
+(assert (deep= (take-while neg? @[-1 1 -2]) [-1]) "take-while 5")
+(assert (deep= (take-while neg? (generate [x :in  @[-1 1 -2]] x))
+               @[-1]) "take-while from fiber")
+
+# drop
+
+(assert (deep= (drop 0 []) []) "drop 1")
+(assert (deep= (drop 10 []) []) "drop 2")
+(assert (deep= (drop 0 [1 2 3 4 5]) [1 2 3 4 5]) "drop 3")
+(assert (deep= (drop 10 [1 2 3]) []) "drop 4")
+(assert (deep= (drop -1 [1 2 3]) [1 2]) "drop 5")
+(assert (deep= (drop -10 [1 2 3]) []) "drop 6")
+(assert (deep= (drop 1 "abc") "bc") "drop 7")
+(assert (deep= (drop 10 "abc") "") "drop 8")
+(assert (deep= (drop -1 "abc") "ab") "drop 9")
+(assert (deep= (drop -10 "abc") "") "drop 10")
+(assert-error :invalid-type (drop 3 {}) "drop 11")
+
+# drop-until
+
+(assert (deep= (drop-until pos? @[]) []) "drop-until 1")
+(assert (deep= (drop-until pos? @[1 2 3]) [1 2 3]) "drop-until 2")
+(assert (deep= (drop-until pos? @[-1 -2 -3]) []) "drop-until 3")
+(assert (deep= (drop-until pos? @[-1 -2 3]) [3]) "drop-until 4")
+(assert (deep= (drop-until pos? @[-1 1 -2]) [1 -2]) "drop-until 5")
+(assert (deep= (drop-until |(= $ 115) "books") "s") "drop-until 6")
+
+
 (end-suite)
 

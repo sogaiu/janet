@@ -98,5 +98,40 @@
            (get (dyn 'foo-fn-with-meta) :doc))
         "extra string in defn is docstring")
 
+# Break
+
+(var summation 0)
+(for i 0 10
+  (+= summation i)
+  (if (= i 7) (break)))
+(assert (= summation 28) "break 1")
+
+(assert (= nil ((fn [] (break) 4))) "break 2")
+
+# Break with value
+
+# Shouldn't error out
+(assert-no-error "break 3" (for i 0 10 (if (> i 8) (break i))))
+(assert-no-error "break 4" ((fn [i] (if (> i 8) (break i))) 100))
+
+# Quasiquote bracketed tuples
+(assert (= (tuple/type ~[1 2 3]) (tuple/type '[1 2 3]))
+        "quasiquote bracket tuples")
+
+# No useless splices
+(check-compile-error '((splice [1 2 3]) 0))
+(check-compile-error '(if ;[1 2] 5))
+(check-compile-error '(while ;[1 2 3] (print :hi)))
+(check-compile-error '(def x ;[1 2 3]))
+(check-compile-error '(fn [x] ;[x 1 2 3]))
+
+# No splice propagation
+(check-compile-error '(+ 1 (do ;[2 3 4]) 5))
+(check-compile-error '(+ 1 (upscope ;[2 3 4]) 5))
+# compiler inlines when condition is constant, ensure that optimization
+# doesn't break
+(check-compile-error '(+ 1 (if true ;[3 4])))
+(check-compile-error '(+ 1 (if false nil ;[3 4])))
+
 (end-suite)
 
