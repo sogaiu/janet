@@ -293,5 +293,12 @@
 (assert (= 2_147_483_647 2_147_483_647.0) "numerical equal 4")
 (assert (= -2_147_483_648 -2_147_483_648.0) "numerical equal 5")
 
+# Looping idea
+(def xs
+  (seq [x :in [-1 0 1] y :in [-1 0 1] :when (not= x y 0)] (tuple x y)))
+(def txs (apply tuple xs))
+
+(assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]]) "nested seq")
+
 (end-suite)
 

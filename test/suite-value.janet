@@ -28,5 +28,23 @@
 (assert (= (get test-struct 'a) 'b) "struct get")
 (assert (= :array (type (get test-struct 'het))) "struct get")
 
+# Buffer stuff
+(defn buffer=
+  [a b]
+  (= (string a) (string b)))
+
+(assert (buffer= @"abcd" @"abcd") "buffer equal 1")
+(assert (buffer= @"abcd" (buffer "ab" "cd")) "buffer equal 2")
+(assert (not= @"" @"") "buffer not equal 1")
+(assert (not= @"abcd" @"abcd") "buffer not equal 2")
+
+(defn buffer-factory
+  []
+  @"im am a buffer")
+
+(assert (not= (buffer-factory) (buffer-factory)) "buffer instantiation")
+
+(assert (= (length @"abcdef") 6) "buffer length")
+
 (end-suite)
 

@@ -260,5 +260,13 @@
 (assert (= (or 1) 1) "or 1")
 (assert (= (or) nil) "or with no arguments")
 
+# Generators
+(def gen (generate [x :range [0 100] :when (pos? (% x 4))] x))
+(var gencount 0)
+(loop [x :in gen]
+  (++ gencount)
+  (assert (pos? (% x 4)) "generate in loop"))
+(assert (= gencount 75) "generate loop count")
+
 (end-suite)
 

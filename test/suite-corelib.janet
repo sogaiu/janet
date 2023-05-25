@@ -69,5 +69,14 @@
 (assert (not= 1 1 0) "not= 1")
 (assert (not= 0 1 1) "not= 2")
 
+# Check if abstract test works
+(assert (abstract? stdout) "abstract? stdout")
+(assert (abstract? stdin) "abstract? stdin")
+(assert (abstract? stderr) "abstract? stderr")
+(assert (not (abstract? nil)) "not abstract? nil")
+(assert (not (abstract? 1)) "not abstract? 1")
+(assert (not (abstract? 3)) "not abstract? 3")
+(assert (not (abstract? 5)) "not abstract? 5")
+
 (end-suite)
 

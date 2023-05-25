@@ -35,4 +35,10 @@
 (assert (= (myfun true) 8) "check do form regression")
 (assert (= (myfun false) 9) "check do form regression")
 
+# Check x:digits: works as symbol and not a hex number
+(def x1 100)
+(assert (= x1 100) "x1 as symbol")
+(def X1 100)
+(assert (= X1 100) "X1 as symbol")
+
 (end-suite)
