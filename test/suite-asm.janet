@@ -21,32 +21,30 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Regression Test
-(assert (= 1 (((compile '(fn [] 1) @{})))) "regression test")
+# Assembly test
+# Fibonacci sequence, implemented with naive recursion.
+(def fibasm (asm '{
+  :arity 1
+  :bytecode [
+    (ltim 1 0 0x2)      # $1 = $0 < 2
+    (jmpif 1 :done)     # if ($1) goto :done
+    (lds 1)             # $1 = self
+    (addim 0 0 -0x1)    # $0 = $0 - 1
+    (push 0)            # push($0), push argument for next function call
+    (call 2 1)          # $2 = call($1)
+    (addim 0 0 -0x1)    # $0 = $0 - 1
+    (push 0)            # push($0)
+    (call 0 1)          # $0 = call($1)
+    (add 0 0 2)        # $0 = $0 + $2 (integers)
+    :done
+    (ret 0)             # return $0
+  ]
+}))
 
-# Fix a compiler bug in the do special form - 3e1e258
-
-(defn myfun [x]
-  (var a 10)
-  (set a (do
-         (def y x)
-         (if x 8 9))))
-
-(assert (= (myfun true) 8) "check do form regression")
-(assert (= (myfun false) 9) "check do form regression")
-
-# Check x:digits: works as symbol and not a hex number
-(def x1 100)
-(assert (= x1 100) "x1 as symbol")
-(def X1 100)
-(assert (= X1 100) "X1 as symbol")
-
-# Edge case should cause old compilers to fail due to
-# if statement optimization
-(var var-a 1)
-(var var-b (if false 2 (string "hello")))
-
-(assert (= var-b "hello") "regression 1")
+(assert (= 0 (fibasm 0)) "fibasm 1")
+(assert (= 1 (fibasm 1)) "fibasm 2")
+(assert (= 55 (fibasm 10)) "fibasm 3")
+(assert (= 6765 (fibasm 20)) "fibasm 4")
 
 (end-suite)
 

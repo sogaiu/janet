@@ -38,7 +38,8 @@
 (assert (= (fiber/status myfiber) :debug) "fiber enters debug state")
 (resume myfiber)
 (assert (= myvar 4) "fiber resumes properly from debug state")
-(assert (= (fiber/status myfiber) :dead) "fiber properly dies from debug state")
+(assert (= (fiber/status myfiber) :dead)
+        "fiber properly dies from debug state")
 
 # Fix yields inside nested fibers - 909c906
 (def yielder
@@ -46,7 +47,42 @@
     (defer (yield :end)
       (repeat 5 (yield :item)))))
 (def items (seq [x :in yielder] x))
-(assert (deep= @[:item :item :item :item :item :end] items) "yield within nested fibers")
+(assert (deep= @[:item :item :item :item :item :end] items)
+        "yield within nested fibers")
+
+# Calling non functions
+
+(assert (= 1 ({:ok 1} :ok)) "calling struct")
+(assert (= 2 (@{:ok 2} :ok)) "calling table")
+(assert (= :bad (try ((identity @{:ok 2}) :ok :no) ([err] :bad)))
+        "calling table too many arguments")
+(assert (= :bad (try ((identity :ok) @{:ok 2} :no) ([err] :bad)))
+        "calling keyword too many arguments")
+(assert (= :oops (try ((+ 2 -1) 1) ([err] :oops)))
+        "calling number fails")
+
+# Method test
+
+(def Dog @{:bark (fn bark [self what]
+                   (string (self :name) " says " what "!"))})
+(defn make-dog
+  [name]
+  (table/setproto @{:name name} Dog))
+
+(assert (= "fido" ((make-dog "fido") :name)) "oo 1")
+(def spot (make-dog "spot"))
+(assert (= "spot says hi!" (:bark spot "hi")) "oo 2")
+
+# Negative tests
+
+(assert-error "+ check types" (+ 1 ()))
+(assert-error "- check types" (- 1 ()))
+(assert-error "* check types" (* 1 ()))
+(assert-error "/ check types" (/ 1 ()))
+(assert-error "band check types" (band 1 ()))
+(assert-error "bor check types" (bor 1 ()))
+(assert-error "bxor check types" (bxor 1 ()))
+(assert-error "bnot check types" (bnot ()))
 
 (end-suite)
 

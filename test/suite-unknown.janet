@@ -300,5 +300,22 @@
 
 (assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]]) "nested seq")
 
+# Another regression test - no segfaults
+(defn afn [x] x)
+(var afn-var afn)
+(var identity-var identity)
+(var map-var map)
+(var not-var not)
+(assert (= 1 (try (afn-var) ([err] 1))) "bad arity 1")
+(assert (= 4 (try ((fn [x y] (+ x y)) 1) ([_] 4))) "bad arity 2")
+(assert (= 1 (try (identity-var) ([err] 1))) "bad arity 3")
+(assert (= 1 (try (map-var) ([err] 1))) "bad arity 4")
+(assert (= 1 (try (not-var) ([err] 1))) "bad arity 5")
+
+# Regression #24
+
+(def t (put @{} :hi 1))
+(assert (deep= t @{:hi 1}) "regression #24")
+
 (end-suite)
 

@@ -21,32 +21,11 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Regression Test
-(assert (= 1 (((compile '(fn [] 1) @{})))) "regression test")
+# Scan number
 
-# Fix a compiler bug in the do special form - 3e1e258
-
-(defn myfun [x]
-  (var a 10)
-  (set a (do
-         (def y x)
-         (if x 8 9))))
-
-(assert (= (myfun true) 8) "check do form regression")
-(assert (= (myfun false) 9) "check do form regression")
-
-# Check x:digits: works as symbol and not a hex number
-(def x1 100)
-(assert (= x1 100) "x1 as symbol")
-(def X1 100)
-(assert (= X1 100) "X1 as symbol")
-
-# Edge case should cause old compilers to fail due to
-# if statement optimization
-(var var-a 1)
-(var var-b (if false 2 (string "hello")))
-
-(assert (= var-b "hello") "regression 1")
+(assert (= 1 (scan-number "1")) "scan-number 1")
+(assert (= -1 (scan-number "-1")) "scan-number -1")
+(assert (= 1.3e4 (scan-number "1.3e4")) "scan-number 1.3e4")
 
 (end-suite)
 

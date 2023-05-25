@@ -190,6 +190,22 @@
 (assert (deep= (seq [x :down-to [10 0]] x) (seq [x :down [10 -1]] x))
         "loop :down-to")
 
+(def res @{})
+(loop [[k v] :pairs @{1 2 3 4 5 6}]
+  (put res k v))
+(assert (and
+          (= (get res 1) 2)
+          (= (get res 3) 4)
+          (= (get res 5) 6)) "loop :pairs")
+
+# Generators
+(def gen (generate [x :range [0 100] :when (pos? (% x 4))] x))
+(var gencount 0)
+(loop [x :in gen]
+  (++ gencount)
+  (assert (pos? (% x 4)) "generate in loop"))
+(assert (= gencount 75) "generate loop count")
+
 # Even and odd
 
 (assert (odd? 9) "odd? 1")
@@ -260,13 +276,39 @@
 (assert (= (or 1) 1) "or 1")
 (assert (= (or) nil) "or with no arguments")
 
-# Generators
-(def gen (generate [x :range [0 100] :when (pos? (% x 4))] x))
-(var gencount 0)
-(loop [x :in gen]
-  (++ gencount)
-  (assert (pos? (% x 4)) "generate in loop"))
-(assert (= gencount 75) "generate loop count")
+(assert (= (length (range 10)) 10) "(range 10)")
+(assert (= (length (range 1 10)) 9) "(range 1 10)")
+(assert (deep= @{:a 1 :b 2 :c 3} (zipcoll '[:a :b :c] '[1 2 3])) "zipcoll")
+
+(def- a 100)
+(assert (= a 100) "def-")
+
+(assert (= :first
+          (match @[1 3 5]
+                 @[x y z] :first
+                 :second)) "match 1")
+
+(def val1 :avalue)
+(assert (= :second
+          (match val1
+                 @[x y z] :first
+                 :avalue :second
+                 :third)) "match 2")
+
+(assert (= 100
+           (match @[50 40]
+                  @[x x] (* x 3)
+                  @[x y] (+ x y 10)
+                  0)) "match 3")
+
+# Some macros
+
+(assert (= 2 (if-not 1 3 2)) "if-not 1")
+(assert (= 3 (if-not false 3)) "if-not 2")
+(assert (= 3 (if-not nil 3 2)) "if-not 3")
+(assert (= nil (if-not true 3)) "if-not 4")
+
+(assert (= 4 (unless false (+ 1 2 3) 4)) "unless")
 
 (end-suite)
 
