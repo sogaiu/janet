@@ -30,9 +30,41 @@
 # Long strings
 
 (assert (= "hello, world" `hello, world`) "simple long string")
-(assert (= "hello, \"world\"" `hello, "world"`) "long string with embedded quotes")
+(assert (= "hello, \"world\"" `hello, "world"`)
+        "long string with embedded quotes")
 (assert (= "hello, \\\\\\ \"world\"" `hello, \\\ "world"`)
         "long string with embedded quotes and backslashes")
+
+# Parser clone
+(def p (parser/new))
+(assert (= 7 (parser/consume p "(1 2 3 ")) "parser 1")
+(def p2 (parser/clone p))
+(parser/consume p2 ") 1 ")
+(parser/consume p ") 1 ")
+(assert (deep= (parser/status p) (parser/status p2)) "parser 2")
+(assert (deep= (parser/state p) (parser/state p2)) "parser 3")
+
+# Parser errors
+(defn parse-error [input]
+  (def p (parser/new))
+  (parser/consume p input)
+  (parser/error p))
+
+# Invalid utf-8 sequences
+(assert (not= nil (parse-error @"\xc3\x28")) "reject invalid utf-8 symbol")
+(assert (not= nil (parse-error @":\xc3\x28")) "reject invalid utf-8 keyword")
+
+# Parser line and column numbers
+(defn parser-location [input &opt location]
+  (def p (parser/new))
+  (parser/consume p input)
+  (if location
+    (parser/where p ;location)
+    (parser/where p)))
+
+(assert (= [1 7] (parser-location @"(+ 1 2)")) "parser location 1")
+(assert (= [5 7] (parser-location @"(+ 1 2)" [5])) "parser location 2")
+(assert (= [10 10] (parser-location @"(+ 1 2)" [10 10])) "parser location 3")
 
 (end-suite)
 

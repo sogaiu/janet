@@ -84,5 +84,29 @@
 
 (check-image issue-53-x "issue 53 regression")
 
+# Marshal and unmarshal pegs
+(def p (-> "abcd" peg/compile marshal unmarshal))
+(assert (peg/match p "abcd") "peg marshal 1")
+(assert (peg/match p "abcdefg") "peg marshal 2")
+(assert (not (peg/match p "zabcdefg")) "peg marshal 3")
+
+# This should be valgrind clean.
+(var pegi 3)
+(defn marshpeg [p]
+  (assert (-> p peg/compile marshal unmarshal)
+          (string "peg marshal " (++ pegi))))
+(marshpeg '(* 1 2 (set "abcd") "asdasd" (+ "." 3)))
+(marshpeg '(% (* (+ 1 2 3) (* "drop" "bear") '"hi")))
+(marshpeg '(> 123 "abcd"))
+(marshpeg '{:main (* 1 "hello" :main)})
+(marshpeg '(range "AZ"))
+(marshpeg '(if-not "abcdf" 123))
+(marshpeg '(error ($)))
+(marshpeg '(* "abcd" (constant :hi)))
+(marshpeg ~(/ "abc" ,identity))
+(marshpeg '(if-not "abcdf" 123))
+(marshpeg ~(cmt "abcdf" ,identity))
+(marshpeg '(group "abc"))
+
 (end-suite)
 

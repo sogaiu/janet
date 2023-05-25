@@ -84,5 +84,13 @@
 (assert-error "bxor check types" (bxor 1 ()))
 (assert-error "bnot check types" (bnot ()))
 
+# Dynamic bindings
+(setdyn :a 10)
+(assert (= 40 (with-dyns [:a 25 :b 15] (+ (dyn :a) (dyn :b)))) "dyn usage 1")
+(assert (= 10 (dyn :a)) "dyn usage 2")
+(assert (= nil (dyn :b)) "dyn usage 3")
+(setdyn :a 100)
+(assert (= 100 (dyn :a)) "dyn usage 4")
+
 (end-suite)
 

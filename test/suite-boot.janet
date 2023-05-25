@@ -374,6 +374,11 @@
 (assert (deep= (drop-until pos? @[-1 1 -2]) [1 -2]) "drop-until 5")
 (assert (deep= (drop-until |(= $ 115) "books") "s") "drop-until 6")
 
+# Comment macro
+(comment 1)
+(comment 1 2)
+(comment 1 2 3)
+(comment 1 2 3 4)
 
 (end-suite)
 
