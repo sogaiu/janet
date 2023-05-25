@@ -276,8 +276,13 @@
 (assert (= (or 1) 1) "or 1")
 (assert (= (or) nil) "or with no arguments")
 
+# Range
+(assert (deep= (range 10) @[0 1 2 3 4 5 6 7 8 9]) "range 1 argument")
+(assert (deep= (range 5 10) @[5 6 7 8 9]) "range 2 arguments")
+(assert (deep= (range 5 10 2) @[5 7 9]) "range 3 arguments")
 (assert (= (length (range 10)) 10) "(range 10)")
 (assert (= (length (range 1 10)) 9) "(range 1 10)")
+
 (assert (deep= @{:a 1 :b 2 :c 3} (zipcoll '[:a :b :c] '[1 2 3])) "zipcoll")
 
 (def- a 100)

@@ -273,7 +273,8 @@
 (assert (= (maxpath triangle) 25) `max triangle`)
 
 # Large functions
-(def manydefs (seq [i :range [0 300]] (tuple 'def (gensym) (string "value_" i))))
+(def manydefs (seq [i :range [0 300]]
+                (tuple 'def (gensym) (string "value_" i))))
 (array/push manydefs (tuple * 10000 3 5 7 9))
 (def f (compile ['do ;manydefs] (fiber/getenv (fiber/current))))
 (assert (= (f) (* 10000 3 5 7 9)) "long function compilation")
@@ -298,7 +299,8 @@
   (seq [x :in [-1 0 1] y :in [-1 0 1] :when (not= x y 0)] (tuple x y)))
 (def txs (apply tuple xs))
 
-(assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]]) "nested seq")
+(assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
+        "nested seq")
 
 # Another regression test - no segfaults
 (defn afn [x] x)
@@ -316,6 +318,13 @@
 
 (def t (put @{} :hi 1))
 (assert (deep= t @{:hi 1}) "regression #24")
+
+# Bracket tuple issue
+
+(let [do 3]
+  (assert (= [3 1 2 3] [do 1 2 3]) "bracket tuples are never special forms"))
+(assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
+(assert (= ~(,+ 1 2 3) [+ 1 2 3]) "bracket tuples are never function calls")
 
 (end-suite)
 

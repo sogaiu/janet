@@ -62,5 +62,27 @@
 (put (strct :a) 0 strct)
 (testmarsh strct "cyclic struct")
 
+# More marshalling code
+
+(defn check-image
+  "Run a marshaling test using the make-image and load-image functions."
+  [x msg]
+  (def im (make-image x))
+  # (printf "\nimage-hash: %d" (-> im string hash))
+  (assert-no-error msg (load-image im)))
+
+(check-image (fn [] (fn [] 1)) "marshal nested functions")
+(check-image (fiber/new (fn [] (fn [] 1)))
+             "marshal nested functions in fiber")
+(check-image (fiber/new (fn [] (fiber/new (fn [] 1))))
+             "marshal nested fibers")
+
+(def issue-53-x
+  (fiber/new
+    (fn []
+      (var y (fiber/new (fn [] (print "1") (yield) (print "2")))))))
+
+(check-image issue-53-x "issue 53 regression")
+
 (end-suite)
 

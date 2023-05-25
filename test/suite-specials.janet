@@ -78,4 +78,25 @@
   (assert (= r1 [1 2]) "tuple destructuring 19 - rest")
   (assert (= r2 [3 4]) "tuple destructuring 20 - rest"))
 
+# Metadata
+
+(def foo-with-tags :a-tag :bar)
+(assert (get (dyn 'foo-with-tags) :a-tag)
+        "extra keywords in def are metadata tags")
+
+(def foo-with-meta {:baz :quux} :bar)
+(assert (= :quux (get (dyn 'foo-with-meta) :baz))
+        "extra struct in def is metadata")
+
+(defn foo-fn-with-meta {:baz :quux}
+  "This is a function"
+  [x]
+  (identity x))
+(assert (= :quux (get (dyn 'foo-fn-with-meta) :baz))
+        "extra struct in defn is metadata")
+(assert (= "(foo-fn-with-meta x)\n\nThis is a function"
+           (get (dyn 'foo-fn-with-meta) :doc))
+        "extra string in defn is docstring")
+
 (end-suite)
+
