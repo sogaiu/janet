@@ -383,5 +383,180 @@
 (assert (peg/match p "abc") "complex peg grammar 1")
 (assert (peg/match p "[1 2 3 4]") "complex peg grammar 2")
 
+###
+### Compiling brainfuck to Janet.
+###
+
+(def- bf-peg
+  "Peg for compiling brainfuck into a Janet source ast."
+  (peg/compile
+    ~{:+ (/ '(some "+") ,(fn [x] ~(+= (DATA POS) ,(length x))))
+      :- (/ '(some "-") ,(fn [x] ~(-= (DATA POS) ,(length x))))
+      :> (/ '(some ">") ,(fn [x] ~(+= POS ,(length x))))
+      :< (/ '(some "<") ,(fn [x] ~(-= POS ,(length x))))
+      :. (* "." (constant (prinf "%c" (get DATA POS))))
+      :loop (/ (* "[" :main "]") ,(fn [& captures]
+                                    ~(while (not= (get DATA POS) 0)
+                                       ,;captures)))
+      :main (any (+ :s :loop :+ :- :> :< :.))}))
+
+(defn bf
+  "Run brainfuck."
+  [text]
+  (eval
+    ~(let [DATA (array/new-filled 100 0)]
+       (var POS 50)
+       ,;(peg/match bf-peg text))))
+
+(defn test-bf
+  "Test some bf for expected output."
+  [input output]
+  (def b @"")
+  (with-dyns [:out b]
+    (bf input))
+  (assert (= (string output) (string b))
+          (string "bf input '"
+                  input
+                  "' failed, expected "
+                  (describe output)
+                  ", got "
+                  (describe (string b))
+                  ".")))
+
+(test-bf (string "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]"
+                 ">>.>---.+++++++..+++.>>.<-.<.+++.------.--------"
+                 ".>>+.>++.") "Hello World!\n")
+
+(test-bf (string ">++++++++"
+                 "[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]"
+                 ">-----.>->+++..+++.>-.<<+[>[+>+]>>]<--------------"
+                 ".>>.+++.------.--------.>+.>+.")
+         "Hello World!\n")
+
+(test-bf (string "+[+[<<<+>>>>]+<-<-<<<+<++]<<.<++.<++..+++.<<++.<---"
+                 ".>>.>.+++.------.>-.>>--.")
+         "Hello, World!")
+
+# #300 Regression test
+
+# Just don't segfault
+(assert (peg/match '{:main (replace "S" {"S" :spade})} "S7")
+        "regression #300")
+
+# Lenprefix rule
+
+(def peg (peg/compile ~(* (lenprefix (/ (* '(any (if-not ":" 1)) ":")
+                                        ,scan-number) 1) -1)))
+
+(assert (peg/match peg "5:abcde") "lenprefix 1")
+(assert (not (peg/match peg "5:abcdef")) "lenprefix 2")
+(assert (not (peg/match peg "5:abcd")) "lenprefix 3")
+
+# Packet capture
+
+(def peg2
+  (peg/compile
+    ~{# capture packet length in tag :header-len
+      :packet-header (* (/ ':d+ ,scan-number :header-len) ":")
+
+      # capture n bytes from a backref :header-len
+      :packet-body '(lenprefix (-> :header-len) 1)
+
+      # header, followed by body, and drop the :header-len capture
+      :packet (/ (* :packet-header :packet-body) ,|$1)
+
+      # any exact seqence of packets (no extra characters)
+      :main (* (any :packet) -1)}))
+
+(assert (deep= @["a" "bb" "ccc"] (peg/match peg2 "1:a2:bb3:ccc"))
+        "lenprefix 4")
+(assert (deep= @["a" "bb" "cccccc"] (peg/match peg2 "1:a2:bb6:cccccc"))
+        "lenprefix 5")
+(assert (= nil (peg/match peg2 "1:a2:bb:5:cccccc")) "lenprefix 6")
+(assert (= nil (peg/match peg2 "1:a2:bb:7:cccccc")) "lenprefix 7")
+
+# Issue #412
+(assert (peg/match '(* "a" (> -1 "a") "b") "abc")
+        "lookhead does not move cursor")
+
+(def peg3
+  ~{:main (* "(" (thru ")"))})
+
+(def peg4 (peg/compile ~(* (thru "(") '(to ")"))))
+
+(assert (peg/match peg3 "(12345)") "peg thru 1")
+(assert (not (peg/match peg3 " (12345)")) "peg thru 2")
+(assert (not (peg/match peg3 "(12345")) "peg thru 3")
+
+(assert (= "abc" (0 (peg/match peg4 "123(abc)"))) "peg thru/to 1")
+(assert (= "abc" (0 (peg/match peg4 "(abc)"))) "peg thru/to 2")
+(assert (not (peg/match peg4 "123(abc")) "peg thru/to 3")
+
+(def peg5 (peg/compile [3 "abc"]))
+
+(assert (:match peg5 "abcabcabc") "repeat alias 1")
+(assert (:match peg5 "abcabcabcac") "repeat alias 2")
+(assert (not (:match peg5 "abcabc")) "repeat alias 3")
+
+# Peg find and find-all
+(def p "/usr/local/bin/janet")
+(assert (= (peg/find '"n/" p) 13) "peg find 1")
+(assert (not (peg/find '"t/" p)) "peg find 2")
+(assert (deep= (peg/find-all '"/" p) @[0 4 10 14]) "peg find-all")
+
+# Peg replace and replace-all
+(defn check-replacer
+  [x y z]
+  (assert (= (string/replace x y z) (string (peg/replace x y z)))
+          "replacer test replace")
+  (assert (= (string/replace-all x y z) (string (peg/replace-all x y z)))
+          "replacer test replace-all"))
+(check-replacer "abc" "Z" "abcabcabcabasciabsabc")
+(check-replacer "abc" "Z" "")
+(check-replacer "aba" "ZZZZZZ" "ababababababa")
+(check-replacer "aba" "" "ababababababa")
+(check-replacer "aba" string/ascii-upper "ababababababa")
+(check-replacer "aba" 123 "ababababababa")
+
+(assert (= (string (peg/replace-all ~(set "ab") string/ascii-upper "abcaa"))
+           "ABcAA")
+        "peg/replace-all cfunction")
+(assert (= (string (peg/replace-all ~(set "ab") |$ "abcaa"))
+           "abcaa")
+        "peg/replace-all function")
+
+(defn peg-test [name f peg subst text expected]
+  (assert (= (string (f peg subst text)) expected) name))
+
+(peg-test "peg/replace has access to captures"
+  peg/replace
+  ~(sequence "." (capture (set "ab")))
+  (fn [str char] (string/format "%s -> %s, " str (string/ascii-upper char)))
+  ".a.b.c"
+  ".a -> A, .b.c")
+
+(peg-test "peg/replace-all has access to captures"
+  peg/replace-all
+  ~(sequence "." (capture (set "ab")))
+  (fn [str char] (string/format "%s -> %s, " str (string/ascii-upper char)))
+  ".a.b.c"
+  ".a -> A, .b -> B, .c")
+
+# Peg bug
+(assert (deep= @[] (peg/match '(any 1) @"")) "peg empty pattern 1")
+(assert (deep= @[] (peg/match '(any 1) (buffer))) "peg empty pattern 2")
+(assert (deep= @[] (peg/match '(any 1) "")) "peg empty pattern 3")
+(assert (deep= @[] (peg/match '(any 1) (string))) "peg empty pattern 4")
+(assert (deep= @[] (peg/match '(* "test" (any 1)) @"test"))
+        "peg empty pattern 5")
+(assert (deep= @[] (peg/match '(* "test" (any 1)) (buffer "test")))
+        "peg empty pattern 6")
+
+# number pattern
+(assert (deep= @[111] (peg/match '(number :d+) "111"))
+        "simple number capture 1")
+(assert (deep= @[255] (peg/match '(number :w+) "0xff"))
+        "simple number capture 2")
+
 (end-suite)
 

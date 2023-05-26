@@ -157,5 +157,13 @@
 (assert (deep= nested '(a ~(b ,(+ 1 2) ,(foo 4 d) e) f))
         "nested quasiquote")
 
+# Regression #400
+(assert (= nil (while (and false false)
+                 (fn [])
+                 (error "should not happen"))) "strangeloop 1")
+(assert (= nil (while (not= nil nil)
+                 (fn [])
+                 (error "should not happen"))) "strangeloop 2")
+
 (end-suite)
 

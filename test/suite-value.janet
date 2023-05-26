@@ -46,5 +46,13 @@
 
 (assert (= (length @"abcdef") 6) "buffer length")
 
+# Tuple comparison
+(assert (< [1 2 3] [2 2 3]) "tuple comparison 1")
+(assert (< [1 2 3] [2 2]) "tuple comparison 2")
+(assert (< [1 2 3] [2 2 3 4]) "tuple comparison 3")
+(assert (< [1 2 3] [1 2 3 4]) "tuple comparison 4")
+(assert (< [1 2 3] [1 2 3 -1]) "tuple comparison 5")
+(assert (> [1 2 3] [1 2]) "tuple comparison 6")
+
 (end-suite)
 

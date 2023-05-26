@@ -108,5 +108,51 @@
 (marshpeg ~(cmt "abcdf" ,identity))
 (marshpeg '(group "abc"))
 
+# Marshal closure over non resumable fiber.
+(do
+  (defn f1
+    [a]
+    (defn f1 [] (++ (a 0)))
+    (defn f2 [] (++ (a 0)))
+    (error [f1 f2]))
+  (def [_ tup] (protect (f1 @[0])))
+  (def [f1 f2] (unmarshal (marshal tup make-image-dict) load-image-dict))
+  (assert (= 1 (f1)) "marshal-non-resumable-closure 1")
+  (assert (= 2 (f2)) "marshal-non-resumable-closure 2"))
+
+# Marshal closure over currently alive fiber.
+(do
+  (defn f1
+    [a]
+    (defn f1 [] (++ (a 0)))
+    (defn f2 [] (++ (a 0)))
+    (marshal [f1 f2] make-image-dict))
+  (def [f1 f2] (unmarshal (f1 @[0]) load-image-dict))
+  (assert (= 1 (f1)) "marshal-live-closure 1")
+  (assert (= 2 (f2)) "marshal-live-closure 2"))
+
+(do
+  (var a 1)
+  (defn b [x] (+ a x))
+  (def c (unmarshal (marshal b)))
+  (assert (= 2 (c 1)) "marshal-on-stack-closure 1"))
+
+# Issue #336 cases - don't segfault
+
+(assert-error "unmarshal errors 1" (unmarshal @"\xd6\xb9\xb9"))
+(assert-error "unmarshal errors 2" (unmarshal @"\xd7bc"))
+(assert-error "unmarshal errors 3"
+              (unmarshal "\xd3\x01\xd9\x01\x62\xcf\x03\x78\x79\x7a"
+                         load-image-dict))
+(assert-error "unmarshal errors 4"
+              (unmarshal
+                @"\xD7\xCD\0e/p\x98\0\0\x03\x01\x01\x01\x02\0\0\x04\0\xCEe/p../tools
+\0\0\0/afl\0\0\x01\0erate\xDE\xDE\xDE\xDE\xDE\xDE\xDE\xDE\xDE\xDE
+\xA8\xDE\xDE\xDE\xDE\xDE\xDE\0\0\0\xDE\xDE_unmarshal_testcase3.ja
+neldb\0\0\0\xD8\x05printG\x01\0\xDE\xDE\xDE'\x03\0marshal_tes/\x02
+\0\0\0\0\0*\xFE\x01\04\x02\0\0'\x03\0\r\0\r\0\r\0\r" load-image-dict))
+
+(gccollect)
+
 (end-suite)
 

@@ -95,6 +95,18 @@
               (string/replace-all "" "." "abcdabcd"))
 (assert-error "string/find-all error 1" (string/find-all "" "abcd"))
 
+# some tests for string/format
+
+(assert (= (string/format "pi = %6.3f" math/pi) "pi =  3.142") "%6.3f")
+(assert (= (string/format "pi = %+6.3f" math/pi) "pi = +3.142") "%6.3f")
+(assert (= (string/format "pi = %40.20g" math/pi)
+           "pi =                     3.141592653589793116") "%6.3f")
+
+(assert (= (string/format "🐼 = %6.3f" math/pi) "🐼 =  3.142") "UTF-8")
+(assert (= (string/format "π = %.8g" math/pi) "π = 3.1415927") "π")
+(assert (= (string/format "\xCF\x80 = %.8g" math/pi) "\xCF\x80 = 3.1415927")
+        "\xCF\x80")
+
 # String check-set
 (assert (string/check-set "abc" "a") "string/check-set 1")
 (assert (not (string/check-set "abc" "z")) "string/check-set 2")
@@ -105,6 +117,11 @@
 
 # Trim empty string
 (assert (= "" (string/trim " ")) "string/trim regression")
+
+# Keyword and Symbol slice
+(assert (= :keyword (keyword/slice "some_keyword_slice" 5 12))
+        "keyword slice")
+(assert (= 'symbol (symbol/slice "some_symbol_slice" 5 11)) "symbol slice")
 
 (end-suite)
 

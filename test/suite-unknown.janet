@@ -332,5 +332,33 @@
                           (get ((fiber/getenv (fiber/current)) 'cond)
                                :doc ""))) "no \\r in doc strings")
 
+# Detaching closure over non resumable fiber.
+(do
+  (defn f1
+    [a]
+    (defn f1 [] (++ (a 0)))
+    (defn f2 [] (++ (a 0)))
+    (error [f1 f2]))
+  (def [_ [f1 f2]] (protect (f1 @[0])))
+  # At time of writing, mark phase can detach closure envs.
+  (gccollect)
+  (assert (= 1 (f1)) "detach-non-resumable-closure 1")
+  (assert (= 2 (f2)) "detach-non-resumable-closure 2"))
+
+(defn check-jdn [x]
+  (assert (deep= (parse (string/format "%j" x)) x) "round trip jdn"))
+
+(check-jdn 0)
+(check-jdn nil)
+(check-jdn [])
+(check-jdn @[[] [] 1231 9.123123 -123123 0.1231231230001])
+(check-jdn -0.123123123123)
+(check-jdn 12837192371923)
+(check-jdn "a string")
+(check-jdn @"a buffer")
+
+# Inline 3 argument get
+(assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
+
 (end-suite)
 

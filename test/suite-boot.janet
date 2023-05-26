@@ -198,6 +198,13 @@
           (= (get res 3) 4)
           (= (get res 5) 6)) "loop :pairs")
 
+# Issue 428
+(var result nil)
+(defn f [] (yield {:a :ok}))
+(assert-no-error "issue 428 1"
+                 (loop [{:a x} :in (fiber/new f)] (set result x)))
+(assert (= result :ok) "issue 428 2")
+
 # Generators
 (def gen (generate [x :range [0 100] :when (pos? (% x 4))] x))
 (var gencount 0)
@@ -276,6 +283,11 @@
 (assert (= (or 1) 1) "or 1")
 (assert (= (or) nil) "or with no arguments")
 
+# And/or checks
+
+(assert (= false (and false false)) "and 1")
+(assert (= false (or false false)) "or 1")
+
 # Range
 (assert (deep= (range 10) @[0 1 2 3 4 5 6 7 8 9]) "range 1 argument")
 (assert (deep= (range 5 10) @[5 6 7 8 9]) "range 2 arguments")
@@ -305,6 +317,40 @@
                   @[x x] (* x 3)
                   @[x y] (+ x y 10)
                   0)) "match 3")
+
+# Match checks
+
+(assert (= :hi (match nil nil :hi)) "match 1")
+(assert (= :hi (match {:a :hi} {:a a} a)) "match 2")
+(assert (= nil (match {:a :hi} {:a a :b b} a)) "match 3")
+(assert (= nil (match [1 2] [a b c] a)) "match 4")
+(assert (= 2 (match [1 2] [a b] b)) "match 5")
+(assert (= [2 :a :b] (match [1 2 :a :b] [o & rest] rest)) "match 6")
+(assert (= [] (match @[:a] @[x & r] r :fallback)) "match 7")
+(assert (= :fallback (match @[1] @[x y & r] r :fallback)) "match 8")
+(assert (= [1 2 3 4] (match @[1 2 3 4] @[x y z & r] [x y z ;r] :fallback))
+        "match 9")
+
+# Test cases for #293
+(assert (= :yes (match [1 2 3] [_ a _] :yes :no)) "match wildcard 1")
+(assert (= :no (match [1 2 3] [__ a __] :yes :no)) "match wildcard 2")
+(assert (= :yes (match [1 2 [1 2 3]] [_ a [_ _ _]] :yes :no))
+        "match wildcard 3")
+(assert (= :yes (match [1 2 3] (_ (even? 2)) :yes :no)) "match wildcard 4")
+(assert (= :yes (match {:a 1} {:a _} :yes :no)) "match wildcard 5")
+(assert (= false (match {:a 1 :b 2 :c 3}
+                   {:a a :b _ :c _ :d _} :no
+                   {:a _ :b _ :c _} false
+                   :no)) "match wildcard 6")
+(assert (= nil (match {:a 1 :b 2 :c 3}
+                 {:a a :b _ :c _ :d _} :no
+                 {:a _ :b _ :c _} nil
+                 :no)) "match wildcard 7")
+(assert (= "t" (match [true nil] [true _] "t")) "match wildcard 8")
+
+# quoted match test
+(assert (= :yes (match 'john 'john :yes _ :nope)) "quoted literal match 1")
+(assert (= :nope (match 'john ''john :yes _ :nope)) "quoted literal match 2")
 
 # Some macros
 
@@ -445,6 +491,56 @@
 (with-dyns [:err @""]
   (tracev (def my-unique-var-name true))
   (assert my-unique-var-name "tracev upscopes"))
+
+# Prompts and Labels
+
+(assert (= 10 (label a (for i 0 10 (if (= i 5) (return a 10))))) "label 1")
+
+(defn recur
+  [lab x y]
+  (when (= x y) (return lab :done))
+  (def res (label newlab (recur (or lab newlab) (+ x 1) y)))
+  (if lab :oops res))
+(assert (= :done (recur nil 0 10)) "label 2")
+
+(assert (= 10 (prompt :a (for i 0 10 (if (= i 5) (return :a 10)))))
+        "prompt 1")
+
+(defn- inner-loop
+  [i]
+  (if (= i 5)
+    (return :a 10)))
+
+(assert (= 10 (prompt :a (for i 0 10 (inner-loop i)))) "prompt 2")
+
+(defn- inner-loop2
+  [i]
+  (try
+    (if (= i 5)
+      (error 10))
+    ([err] (return :a err))))
+
+(assert (= 10 (prompt :a (for i 0 10 (inner-loop2 i)))) "prompt 3")
+
+# chr
+(assert (= (chr "a") 97) "chr 1")
+
+# Reduce2
+
+(assert (= (reduce + 0 (range 1 10)) (reduce2 + (range 10))) "reduce2 1")
+(assert (= (reduce * 1 (range 2 10)) (reduce2 * (range 1 10))) "reduce2 2")
+(assert (= nil (reduce2 * [])) "reduce2 3")
+
+# Accumulate
+
+(assert (deep= (accumulate + 0 (range 5)) @[0 1 3 6 10]) "accumulate 1")
+(assert (deep= (accumulate2 + (range 5)) @[0 1 3 6 10]) "accumulate2 1")
+(assert (deep= @[] (accumulate2 + [])) "accumulate2 2")
+(assert (deep= @[] (accumulate 0 + [])) "accumulate 2")
+
+# in vs get regression - #340
+(assert (nil? (first @"")) "in vs get 1")
+(assert (nil? (last @"")) "in vs get 1")
 
 (end-suite)
 

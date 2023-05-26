@@ -27,5 +27,8 @@
 (assert (= -1 (scan-number "-1")) "scan-number -1")
 (assert (= 1.3e4 (scan-number "1.3e4")) "scan-number 1.3e4")
 
+# For undefined behavior sanitizer - c876e63
+0xf&1fffFFFF
+
 (end-suite)
 

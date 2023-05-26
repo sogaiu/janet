@@ -80,7 +80,7 @@
 (assert (= (string (buffer/format buftemp "---%p %p---" buftemp buftemp))
            `abcd---@"abcd" @"abcd"---`) "buffer/format on self 2")
 
-# some tests for string/format and buffer/format
+# some tests for buffer/format
 
 (assert (= (string (buffer/format @"" "pi = %6.3f" math/pi)) "pi =  3.142")
         "%6.3f")
@@ -96,15 +96,15 @@
 (assert (= (string (buffer/format @"" "\xCF\x80 = %.8g" math/pi))
            "\xCF\x80 = 3.1415927") "\xCF\x80")
 
-(assert (= (string/format "pi = %6.3f" math/pi) "pi =  3.142") "%6.3f")
-(assert (= (string/format "pi = %+6.3f" math/pi) "pi = +3.142") "%6.3f")
-(assert (= (string/format "pi = %40.20g" math/pi)
-           "pi =                     3.141592653589793116") "%6.3f")
+# Regression #301
+(def b (buffer/new-filled 128 0x78))
+(assert (= 38 (length (buffer/blit @"" b -1 90))) "buffer/blit 1")
 
-(assert (= (string/format "🐼 = %6.3f" math/pi) "🐼 =  3.142") "UTF-8")
-(assert (= (string/format "π = %.8g" math/pi) "π = 3.1415927") "π")
-(assert (= (string/format "\xCF\x80 = %.8g" math/pi) "\xCF\x80 = 3.1415927")
-        "\xCF\x80")
+(def a @"abcdefghijklm")
+(assert (deep= @"abcde" (buffer/blit @"" a -1 0 5)) "buffer/blit 2")
+(assert (deep= @"bcde" (buffer/blit @"" a -1 1 5)) "buffer/blit 3")
+(assert (deep= @"cde" (buffer/blit @"" a -1 2 5)) "buffer/blit 4")
+(assert (deep= @"de" (buffer/blit @"" a -1 3 5)) "buffer/blit 5")
 
 (end-suite)
 
