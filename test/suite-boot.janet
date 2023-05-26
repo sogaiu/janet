@@ -21,14 +21,14 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Let
+# Let - 807f981
 
 (assert (= (let [a 1 b 2] (+ a b)) 3) "simple let")
 (assert (= (let [[a b] @[1 2]] (+ a b)) 3) "destructured let")
 (assert (= (let [[a [c d] b] @[1 (tuple 4 3) 2]] (+ a b c d)) 10)
         "double destructured let")
 
-# Macros
+# Macros - b305a7c
 
 (defn dub [x] (+ x x))
 (assert (= 2 (dub 1)) "defn macro")
@@ -145,7 +145,7 @@
            (any? [nil nil false nil nil true nil nil nil nil false :a nil]))
         "any? 6")
 
-# Some higher order functions and macros
+# Some higher order functions and macros - 5e2de33
 
 (def my-array @[1 2 3 4 5 6])
 (def x (if-let [x (get my-array 5)] x))
@@ -157,7 +157,7 @@
 (def myfun (juxt + - * /))
 (assert (= [2 -2 2 0.5] (myfun 2)) "juxt")
 
-# Case statements
+# Case statements - 5249228
 (assert
   (= :six (case (+ 1 2 3)
             1 :one

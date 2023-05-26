@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Assembly test
+# Assembly test - a679f60
 # Fibonacci sequence, implemented with naive recursion.
 (def fibasm (asm '{
   :arity 1
