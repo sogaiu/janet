@@ -21,13 +21,14 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# 7e46ead2f
 (assert (not false) "false literal")
 (assert true "true literal")
 (assert (not nil) "nil literal")
 
 (assert (= '(1 2 3) (quote (1 2 3)) (tuple 1 2 3)) "quote shorthand")
 
-# Long strings
+# Long strings - 7e6342720
 
 (assert (= "hello, world" `hello, world`) "simple long string")
 (assert (= "hello, \"world\"" `hello, "world"`)
@@ -35,7 +36,7 @@
 (assert (= "hello, \\\\\\ \"world\"" `hello, \\\ "world"`)
         "long string with embedded quotes and backslashes")
 
-# Parser clone
+# Parser clone - 43520ac67
 (def p (parser/new))
 (assert (= 7 (parser/consume p "(1 2 3 ")) "parser 1")
 (def p2 (parser/clone p))
@@ -44,7 +45,7 @@
 (assert (deep= (parser/status p) (parser/status p2)) "parser 2")
 (assert (deep= (parser/state p) (parser/state p2)) "parser 3")
 
-# Parser errors
+# Parser errors - 976dfc719
 (defn parse-error [input]
   (def p (parser/new))
   (parser/consume p input)
@@ -54,7 +55,7 @@
 (assert (not= nil (parse-error @"\xc3\x28")) "reject invalid utf-8 symbol")
 (assert (not= nil (parse-error @":\xc3\x28")) "reject invalid utf-8 keyword")
 
-# Parser line and column numbers
+# Parser line and column numbers - 77b79e989
 (defn parser-location [input &opt location]
   (def p (parser/new))
   (parser/consume p input)
@@ -66,10 +67,7 @@
 (assert (= [5 7] (parser-location @"(+ 1 2)" [5])) "parser location 2")
 (assert (= [10 10] (parser-location @"(+ 1 2)" [10 10])) "parser location 3")
 
-# Issue #183 - just parse it :)
-1e-4000000000000000000000
-
-# Issue #861 - should be valgrind clean
+# Issue #861 - should be valgrind clean - 39c6be7cb
 (def step1 "(a b c d)\n")
 (def step2 "(a b)\n")
 (def p1 (parser/new))

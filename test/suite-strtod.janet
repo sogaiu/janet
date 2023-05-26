@@ -27,6 +27,9 @@
 (assert (= -1 (scan-number "-1")) "scan-number -1")
 (assert (= 1.3e4 (scan-number "1.3e4")) "scan-number 1.3e4")
 
+# Issue #183 - just parse it :) - 688d297a1
+1e-4000000000000000000000
+
 # For undefined behavior sanitizer - c876e63
 0xf&1fffFFFF
 
