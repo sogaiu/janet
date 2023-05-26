@@ -106,5 +106,13 @@
 (assert (deep= @"cde" (buffer/blit @"" a -1 2 5)) "buffer/blit 4")
 (assert (deep= @"de" (buffer/blit @"" a -1 3 5)) "buffer/blit 5")
 
+# buffer/push-at
+(assert (deep= @"abc456" (buffer/push-at @"abc123" 3 "456"))
+        "buffer/push-at 1")
+(assert (deep= @"abc456789" (buffer/push-at @"abc123" 3 "456789"))
+        "buffer/push-at 2")
+(assert (deep= @"abc423" (buffer/push-at @"abc123" 3 "4"))
+        "buffer/push-at 3")
+
 (end-suite)
 
