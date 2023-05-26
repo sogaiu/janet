@@ -23,37 +23,39 @@
 
 # Peg
 
+# 83f4a11bf
 (defn check-match
   [pat text should-match]
   (def result (peg/match pat text))
   (assert (= (not should-match) (not result))
           (string "check-match " text)))
 
+# 798c88b4c
 (defn check-deep
   [pat text what]
   (def result (peg/match pat text))
   (assert (deep= result what) (string "check-deep " text)))
 
-# Just numbers
+# Just numbers - 83f4a11bf
 
 (check-match '(* 4 -1) "abcd" true)
 (check-match '(* 4 -1) "abc" false)
 (check-match '(* 4 -1) "abcde" false)
 
-# Simple pattern
+# Simple pattern - 83f4a11bf
 
 (check-match '(* (some (range "az" "AZ")) -1) "hello" true)
 (check-match '(* (some (range "az" "AZ")) -1) "hello world" false)
 (check-match '(* (some (range "az" "AZ")) -1) "1he11o" false)
 (check-match '(* (some (range "az" "AZ")) -1) "" false)
 
-# Pre compile
+# Pre compile - ff0d3a008
 
 (def pegleg (peg/compile '{:item "abc" :main (* :item "," :item -1)}))
 
 (peg/match pegleg "abc,abc")
 
-# Bad Grammars
+# Bad Grammars - 192705113
 
 (assert-error "peg/compile error 1" (peg/compile nil))
 (assert-error "peg/compile error 2" (peg/compile @{}))
@@ -61,7 +63,7 @@
 (assert-error "peg/compile error 4" (peg/compile '(blarg "abc")))
 (assert-error "peg/compile error 5" (peg/compile '(1 2 3)))
 
-# IP address
+# IP address - 40845b5c1
 
 (def ip-address
   '{:d (range "09")
@@ -80,10 +82,7 @@
 (check-match ip-address "256.2.3.4" false)
 (check-match ip-address "256.2.3.2514" false)
 
-# Substitution test with peg
-
-(file/flush stderr)
-(file/flush stdout)
+# Substitution test with peg - d7626f8c5
 
 (def grammar '(accumulate (any (+ (/ "dog" "purple panda") (<- 1)))))
 (defn try-grammar [text]
@@ -98,7 +97,7 @@
 (try-grammar "i have a dog called doug the doggg")
 (try-grammar "i have a dog called doug the dogggg")
 
-# Peg CSV test
+# Peg CSV test - 798c88b4c
 
 (def csv
   '{:field (+
@@ -115,13 +114,13 @@
 (check-csv "1,\"2\",3" @["1" "2" "3"])
 (check-csv ``1,"1""",3`` @["1" "1\"" "3"])
 
-# Nested Captures
+# Nested Captures - 798c88b4c
 
 (def grmr '(capture (* (capture "a") (capture 1) (capture "c"))))
 (check-deep grmr "abc" @["a" "b" "c" "abc"])
 (check-deep grmr "acc" @["a" "c" "c" "acc"])
 
-# Functions in grammar
+# Functions in grammar - 798c88b4c
 
 (def grmr-triple ~(% (any (/ (<- 1) ,(fn [x] (string x x x))))))
 (check-deep grmr-triple "abc" @["aaabbbccc"])
@@ -131,11 +130,11 @@
 (def counter ~(/ (group (any (<- 1))) ,length))
 (check-deep counter "abcdefg" @[7])
 
-# Capture Backtracking
+# Capture Backtracking - ff0d3a008
 
 (check-deep '(+ (* (capture "c") "d") "ce") "ce" @[])
 
-# Matchtime capture
+# Matchtime capture - 192705113
 
 (def scanner (peg/compile ~(cmt (capture (some 1)) ,scan-number)))
 
@@ -144,7 +143,7 @@
 (check-deep scanner "-1.3e-7" @[-1.3e-7])
 (check-deep scanner "123A" nil)
 
-# Recursive grammars
+# Recursive grammars - 170e785b7
 
 (def g '{:main (+ (* "a" :main "b") "c")})
 
@@ -153,7 +152,7 @@
 (check-match g "aacbb" true)
 (check-match g "aadbb" false)
 
-# Back reference
+# Back reference - d0ec89c7c
 
 (def wrapped-string
   ~{:pad (any "=")
@@ -187,7 +186,7 @@
 (check-match janet-longstring "``  ```" false)
 (check-match janet-longstring "`a``b`" false)
 
-# Line and column capture
+# Line and column capture - 776ce586b
 
 (def line-col (peg/compile '(any (* (line) (column) 1))))
 (check-deep line-col "abcd" @[1 1 1 2 1 3 1 4])
@@ -195,7 +194,7 @@
 (check-deep line-col "abcd\n" @[1 1 1 2 1 3 1 4 1 5])
 (check-deep line-col "abcd\nz" @[1 1 1 2 1 3 1 4 1 5 2 1])
 
-# Backmatch
+# Backmatch - 711fe64a5
 
 (def backmatcher-1 '(* (capture (any "x") :1) "y" (backmatch :1) -1))
 
@@ -231,7 +230,7 @@
 (check-match longstring-2 "``` `` ```" true)
 (check-match longstring-2 "``  ```" false)
 
-# Optional
+# Optional - 4eeadd746
 
 (check-match '(* (opt "hi") -1) "" true)
 (check-match '(* (opt "hi") -1) "hi" true)
@@ -240,19 +239,19 @@
 (check-match '(* (? "hi") -1) "hi" true)
 (check-match '(* (? "hi") -1) "no" false)
 
-# Drop
+# Drop - b4934cedd
 
 (check-deep '(drop '"hello") "hello" @[])
 (check-deep '(drop "hello") "hello" @[])
 
-# Peg swallowing errors
+# Peg swallowing errors - 159651117
 (assert (try (peg/match ~(/ '1 ,(fn [x] (nil x))) "x") ([err] err))
         "errors should not be swallowed")
 (assert (try ((fn [x] (nil x))) ([err] err))
         "errors should not be swallowed 2")
 
 # Check for bad memoization (+ :a) should mean different things in
-# different contexts.
+# different contexts - 8bc8709d0
 (def redef-a
   ~{:a "abc"
     :c (+ :a)
@@ -262,6 +261,7 @@
 (check-match redef-a "abcabc" false)
 (check-match redef-a "defdef" false)
 
+# 54a04b589
 (def redef-b
   ~{:pork {:pork "beef" :main (+ -1 (* 1 :pork))}
     :main :pork})
@@ -270,7 +270,7 @@
 (check-match redef-b "aabeef" false)
 (check-match redef-b "aaaaaa" false)
 
-# Integer parsing
+# Integer parsing - 45feb5548
 
 (check-deep '(int 1) "a" @[(chr "a")])
 (check-deep '(uint 1) "a" @[(chr "a")])
@@ -294,7 +294,7 @@
 
 (check-deep '(* (int 2) -1) "123" nil)
 
-# to/thru bug
+# to/thru bug - issue #640 - 742469a8b
 (check-deep '(to -1) "aaaa" @[])
 (check-deep '(thru -1) "aaaa" @[])
 (check-deep ''(to -1) "aaaa" @["aaaa"])
@@ -302,7 +302,7 @@
 (check-deep '(to "b") "aaaa" nil)
 (check-deep '(thru "b") "aaaa" nil)
 
-# unref
+# unref - 96513665d
 (def grammar
   (peg/compile
     ~{:main (* :tagged -1)
@@ -315,7 +315,7 @@
             @[{:tag "p" :value @[{:tag "em" :value @["foobar"]}]}])
 (check-deep grammar "<p>foobar</p>" @[{:tag "p" :value @["foobar"]}])
 
-# Using a large test grammar
+# Using a large test grammar - cf05ff610
 
 (def- specials {'fn true
                'var true
@@ -384,7 +384,7 @@
 (assert (peg/match p "[1 2 3 4]") "complex peg grammar 2")
 
 ###
-### Compiling brainfuck to Janet.
+### Compiling brainfuck to Janet - 20d5d560f
 ###
 
 (def- bf-peg
@@ -437,13 +437,13 @@
                  ".>>.>.+++.------.>-.>>--.")
          "Hello, World!")
 
-# #300 Regression test
+# Regression test - issue #300 - 714bd61d5
 
 # Just don't segfault
 (assert (peg/match '{:main (replace "S" {"S" :spade})} "S7")
         "regression #300")
 
-# Lenprefix rule
+# Lenprefix rule - 8b5bcaee3
 
 (def peg (peg/compile ~(* (lenprefix (/ (* '(any (if-not ":" 1)) ":")
                                         ,scan-number) 1) -1)))
@@ -452,7 +452,7 @@
 (assert (not (peg/match peg "5:abcdef")) "lenprefix 2")
 (assert (not (peg/match peg "5:abcd")) "lenprefix 3")
 
-# Packet capture
+# Packet capture - 8b5bcaee3
 
 (def peg2
   (peg/compile
@@ -475,10 +475,11 @@
 (assert (= nil (peg/match peg2 "1:a2:bb:5:cccccc")) "lenprefix 6")
 (assert (= nil (peg/match peg2 "1:a2:bb:7:cccccc")) "lenprefix 7")
 
-# Issue #412
+# Issue #412 - 677737d34
 (assert (peg/match '(* "a" (> -1 "a") "b") "abc")
         "lookhead does not move cursor")
 
+# 6d096551f
 (def peg3
   ~{:main (* "(" (thru ")"))})
 
@@ -492,19 +493,20 @@
 (assert (= "abc" (0 (peg/match peg4 "(abc)"))) "peg thru/to 2")
 (assert (not (peg/match peg4 "123(abc")) "peg thru/to 3")
 
+# 86e12369b
 (def peg5 (peg/compile [3 "abc"]))
 
 (assert (:match peg5 "abcabcabc") "repeat alias 1")
 (assert (:match peg5 "abcabcabcac") "repeat alias 2")
 (assert (not (:match peg5 "abcabc")) "repeat alias 3")
 
-# Peg find and find-all
+# Peg find and find-all - c26f57362
 (def p "/usr/local/bin/janet")
 (assert (= (peg/find '"n/" p) 13) "peg find 1")
 (assert (not (peg/find '"t/" p)) "peg find 2")
 (assert (deep= (peg/find-all '"/" p) @[0 4 10 14]) "peg find-all")
 
-# Peg replace and replace-all
+# Peg replace and replace-all - e548e1f6e
 (defn check-replacer
   [x y z]
   (assert (= (string/replace x y z) (string (peg/replace x y z)))
@@ -515,9 +517,10 @@
 (check-replacer "abc" "Z" "")
 (check-replacer "aba" "ZZZZZZ" "ababababababa")
 (check-replacer "aba" "" "ababababababa")
+
+# 485099fd6
 (check-replacer "aba" string/ascii-upper "ababababababa")
 (check-replacer "aba" 123 "ababababababa")
-
 (assert (= (string (peg/replace-all ~(set "ab") string/ascii-upper "abcaa"))
            "ABcAA")
         "peg/replace-all cfunction")
@@ -525,6 +528,7 @@
            "abcaa")
         "peg/replace-all function")
 
+# 9dc7e8ed3
 (defn peg-test [name f peg subst text expected]
   (assert (= (string (f peg subst text)) expected) name))
 
@@ -542,7 +546,7 @@
   ".a.b.c"
   ".a -> A, .b -> B, .c")
 
-# Peg bug
+# Peg bug - eab5f67c5
 (assert (deep= @[] (peg/match '(any 1) @"")) "peg empty pattern 1")
 (assert (deep= @[] (peg/match '(any 1) (buffer))) "peg empty pattern 2")
 (assert (deep= @[] (peg/match '(any 1) "")) "peg empty pattern 3")
@@ -552,13 +556,13 @@
 (assert (deep= @[] (peg/match '(* "test" (any 1)) (buffer "test")))
         "peg empty pattern 6")
 
-# number pattern
+# number pattern - cccbdc164
 (assert (deep= @[111] (peg/match '(number :d+) "111"))
         "simple number capture 1")
 (assert (deep= @[255] (peg/match '(number :w+) "0xff"))
         "simple number capture 2")
 
-# to/thru bug - issue #971
+# to/thru bug - issue #971 - a895219d2
 (def pattern
   (peg/compile
     '{:dd (sequence :d :d)
@@ -596,12 +600,13 @@
 (assert (deep= (peg/match sym-prefix-peg @"1234" 4) @[0 "1234"])
         "peg lookback 2")
 
+# issue #1027 - 356b39c6f
 (assert (deep= (peg/replace-all '(* (<- 1) 1 (backmatch))
                                 "xxx" "aba cdc efa")
                @"xxx xxx efa")
         "peg replace-all 1")
 
-# issue #1026
+# issue #1026 - 9341081a4
 (assert (deep=
   (peg/match '(not (* (constant 7) "a")) "hello")
   @[]) "peg not")
