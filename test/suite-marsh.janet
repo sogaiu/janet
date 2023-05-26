@@ -108,7 +108,7 @@
 (marshpeg ~(cmt "abcdf" ,identity))
 (marshpeg '(group "abc"))
 
-# Marshal closure over non resumable fiber.
+# Marshal closure over non resumable fiber - issue #317
 (do
   (defn f1
     [a]
@@ -120,7 +120,7 @@
   (assert (= 1 (f1)) "marshal-non-resumable-closure 1")
   (assert (= 2 (f2)) "marshal-non-resumable-closure 2"))
 
-# Marshal closure over currently alive fiber.
+# Marshal closure over currently alive fiber - issue #317
 (do
   (defn f1
     [a]

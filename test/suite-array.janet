@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Array tests
+# Array tests - e05022f
 
 (defn array=
   "Check if two arrays are equal in an element by element comparison"

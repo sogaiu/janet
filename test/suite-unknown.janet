@@ -22,7 +22,7 @@
 (start-suite)
 
 # Set global variables to prevent some possible compiler optimizations
-# that defeat point of the test
+# that defeat point of the test - 2771171
 (var zero 0)
 (var one 1)
 (var two 2)
@@ -31,12 +31,12 @@
 (assert (= 22 (plus one (plus 1 2 two) (plus 8 (plus zero 1) 4 three)))
         "nested function calls")
 
-# String literals
+# String literals - 45f8db0
 (assert (= "abcd" "\x61\x62\x63\x64") "hex escapes")
 (assert (= "\e" "\x1B") "escape character")
 (assert (= "\x09" "\t") "tab character")
 
-# McCarthy's 91 function
+# McCarthy's 91 function - 2771171
 (var f91 nil)
 (set f91 (fn [n]
            (if (> n 100)
@@ -52,7 +52,7 @@
 (assert (= 93 (f91 103)) "f91(103) = 93")
 (assert (= 94 (f91 104)) "f91(104) = 94")
 
-# Fibonacci
+# Fibonacci - 23196ff
 (def fib
   (do
     (var fib nil)
@@ -78,7 +78,7 @@
 (assert (= (fib 9) (fib2 9) 34) "fib(9)")
 (assert (= (fib 10) (fib2 10) 55) "fib(10)")
 
-# Closure in non function scope
+# Closure in non function scope - 911b0b1
 (def outerfun (fn [x y]
                 (def c (do
                          (def someval (+ 10 y))
@@ -92,6 +92,7 @@
 (assert (= ((outerfun nil 2)) 2) "inner closure 2")
 (assert (= ((outerfun false 3)) 3) "inner closure 3")
 
+# e2c78b3
 ((fn []
    (var accum 1)
    (var counter 0)
@@ -107,11 +108,11 @@
   (set counter (+ 1 counter)))
 (assert (= accum 65536) "loop globally")
 
-# Symbol function
+# Symbol function - 5460ff1
 
 (assert (= (symbol "abc" 1 2 3) 'abc123) "symbol function")
 
-# Fiber tests
+# Fiber tests - 21bd960
 
 (def afiber (fiber/new (fn []
                          (def x (yield))
@@ -123,7 +124,7 @@
 (assert (= afiber-result "hello, world!") "fiber error result")
 (assert (= (fiber/status afiber) :error) "fiber error status")
 
-# yield tests
+# yield tests - 171c0ce
 
 (def t (fiber/new (fn [&] (yield 1) (yield 2) 3)))
 
@@ -132,7 +133,7 @@
 (assert (= 3 (resume t)) "return from fiber")
 (assert (= (fiber/status t) :dead) "finished fiber is dead")
 
-# Var arg tests
+# Var arg tests - f054586
 
 (def vargf (fn [more] (apply + more)))
 
@@ -143,7 +144,7 @@
 (assert (= 110 (vargf @[1 2 3 4 10 10 10 10 10 10 10 10 10 10]))
         "var arg large tuple")
 
-# Higher order functions
+# Higher order functions - d9f24ef
 
 (def compose (fn [f g] (fn [& xs] (f (apply g xs)))))
 
@@ -155,7 +156,7 @@
 (assert (= ((compose -+ +-) 1 2 3 4) 8) "compose -+ +-")
 (assert (= ((compose +- -+) 1 2 3 4) 10) "compose +- -+")
 
-# UTF-8
+# UTF-8 - d9f24ef
 
 #🐙🐙🐙🐙
 
@@ -169,7 +170,7 @@
 (assert (= "\u24c2" "\U0024c2" "Ⓜ") "unicode escape 3")
 (assert (= "\u0061" "a") "unicode escape 4")
 
-# Symbols with @ character
+# Symbols with @ character - d68eae9
 
 (def @ 1)
 (assert (= @ 1) "@ symbol")
@@ -178,7 +179,7 @@
 (def @hey 3)
 (assert (= @hey 3) "@hey symbol")
 
-# Merge sort
+# Merge sort - f5b29b8
 
 # Imperative (and verbose) merge sort merge
 (defn merge-sort
@@ -219,7 +220,7 @@
 (assert (deep= @[{:a 1} {:a 4} {:a 7}]
                (sorted-by |($ :a) [{:a 4} {:a 7} {:a 1}])) "sort 4")
 
-# Dynamic defs
+# Dynamic defs - ec65f03
 
 (def staticdef1 0)
 (defn staticdef1-inc [] (+ 1 staticdef1))
@@ -245,7 +246,7 @@
 
 (assert-many (fn [] (>= 1 (math/random) 0)) 200 "(random) between 0 and 1")
 
-# Test max triangle program
+# Test max triangle program - c0e373f
 
 # Find the maximum path from the top (root)
 # of the triangle to the leaves of the triangle.
@@ -272,14 +273,14 @@
 
 (assert (= (maxpath triangle) 25) `max triangle`)
 
-# Large functions
+# Large functions - 6822400
 (def manydefs (seq [i :range [0 300]]
                 (tuple 'def (gensym) (string "value_" i))))
 (array/push manydefs (tuple * 10000 3 5 7 9))
 (def f (compile ['do ;manydefs] (fiber/getenv (fiber/current))))
 (assert (= (f) (* 10000 3 5 7 9)) "long function compilation")
 
-# Closure in while loop
+# Closure in while loop - abe7d59
 (def closures (seq [i :range [0 5]] (fn [] i)))
 (assert (= 0 ((get closures 0))) "closure in loop 0")
 (assert (= 1 ((get closures 1))) "closure in loop 1")
@@ -287,14 +288,14 @@
 (assert (= 3 ((get closures 3))) "closure in loop 3")
 (assert (= 4 ((get closures 4))) "closure in loop 4")
 
-# More numerical tests
+# More numerical tests - e05022f
 (assert (= 1 1.0) "numerical equal 1")
 (assert (= 0 0.0) "numerical equal 2")
 (assert (= 0 -0.0) "numerical equal 3")
 (assert (= 2_147_483_647 2_147_483_647.0) "numerical equal 4")
 (assert (= -2_147_483_648 -2_147_483_648.0) "numerical equal 5")
 
-# Looping idea
+# Looping idea - 45f8db0
 (def xs
   (seq [x :in [-1 0 1] y :in [-1 0 1] :when (not= x y 0)] (tuple x y)))
 (def txs (apply tuple xs))
@@ -302,7 +303,7 @@
 (assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
         "nested seq")
 
-# Another regression test - no segfaults
+# Another regression test - no segfaults - 6b4824c
 (defn afn [x] x)
 (var afn-var afn)
 (var identity-var identity)
@@ -314,25 +315,25 @@
 (assert (= 1 (try (map-var) ([err] 1))) "bad arity 4")
 (assert (= 1 (try (not-var) ([err] 1))) "bad arity 5")
 
-# Regression #24
+# Regression - issue #24
 
 (def t (put @{} :hi 1))
 (assert (deep= t @{:hi 1}) "regression #24")
 
-# Bracket tuple issue
+# Bracket tuple issue - 340a6c4
 
 (let [do 3]
   (assert (= [3 1 2 3] [do 1 2 3]) "bracket tuples are never special forms"))
 (assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
 (assert (= ~(,+ 1 2 3) [+ 1 2 3]) "bracket tuples are never function calls")
 
-# Make sure Carriage Returns don't end up in doc strings.
+# Make sure Carriage Returns don't end up in doc strings - e528b86
 
 (assert (not (string/find "\r"
                           (get ((fiber/getenv (fiber/current)) 'cond)
                                :doc ""))) "no \\r in doc strings")
 
-# Detaching closure over non resumable fiber.
+# Detaching closure over non resumable fiber - issue #317
 (do
   (defn f1
     [a]
@@ -345,6 +346,7 @@
   (assert (= 1 (f1)) "detach-non-resumable-closure 1")
   (assert (= 2 (f2)) "detach-non-resumable-closure 2"))
 
+# 5c364e0
 (defn check-jdn [x]
   (assert (deep= (parse (string/format "%j" x)) x) "round trip jdn"))
 
@@ -357,11 +359,11 @@
 (check-jdn "a string")
 (check-jdn @"a buffer")
 
-# Inline 3 argument get
+# Inline 3 argument get - a1ea62a
 (assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
 
 #
-# Longstring indentation
+# Longstring indentation - 7aa4241
 #
 
 (defn reindent
@@ -423,7 +425,7 @@
 (check-indent "\n    Hello, world!\n   dedented text\n    " 4)
 (check-indent "\n    Hello, world!\n    indented text\n    " 4)
 
-# Struct prototypes
+# Struct prototypes - 4d983e5
 (def x (struct/with-proto {1 2 3 4} 5 6))
 (def y (-> x marshal unmarshal))
 (def z {1 2 3 4})
@@ -444,7 +446,7 @@
 (assert (deep-not= x z) "struct proto deep= 2")
 (assert (deep-not= y z) "struct proto deep= 3")
 
-# missing symbols - #914
+# missing symbols - issue #914
 
 (defn lookup-symbol [sym] (defglobal sym 10) (dyn sym))
 
@@ -461,22 +463,25 @@
   "table rawget regression"
   (table/new -1))
 
-# Named arguments
+# Named arguments - 87fc339
 (defn named-arguments
   [&named bob sally joe]
   (+ bob sally joe))
 
 (assert (= 15 (named-arguments :bob 3 :sally 5 :joe 7)) "named arguments 1")
 
+# a117252
 (defn named-opt-arguments
   [&opt x &named a b c]
   (+ x a b c))
 
 (assert (= 10 (named-opt-arguments 1 :a 2 :b 3 :c 4)) "named arguments 2")
 
+# dacbe29
 (def f (asm (disasm (fn [x] (fn [y] (+ x y))))))
 (assert (= ((f 10) 37) 47) "asm environment tables")
 
+# 88813c4
 (assert (deep= (in (disasm (defn a [] (def x 10) x)) :symbolmap)
                @[[0 3 0 'a] [1 3 1 'x]])
         "symbolslots when *debug* is true")
