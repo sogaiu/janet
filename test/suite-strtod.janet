@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Scan number
+# Scan number - 798c88b4c
 
 (assert (= 1 (scan-number "1")) "scan-number 1")
 (assert (= -1 (scan-number "-1")) "scan-number -1")
@@ -30,7 +30,7 @@
 # For undefined behavior sanitizer - c876e63
 0xf&1fffFFFF
 
-# off by 1 error in inttypes
+# off by 1 error in inttypes - a3e812b86
 (assert (= (int/s64 "-0x8000_0000_0000_0000")
            (+ (int/s64 "0x7FFF_FFFF_FFFF_FFFF") 1)) "int types wrap around")
 
