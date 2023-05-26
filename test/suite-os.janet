@@ -128,5 +128,10 @@
 (assert (= (os/perm-string 8r755) "rwxr-xr-x") "perm 8")
 (assert (= (os/perm-string 8r644) "rw-r--r--") "perm 9")
 
+# os/execute with environment variables
+(assert (= 0 (os/execute [(dyn :executable) "-e" "(+ 1 2 3)"] :pe
+                         (merge (os/environ) {"HELLO" "WORLD"})))
+        "os/execute with env")
+
 (end-suite)
 

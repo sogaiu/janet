@@ -123,5 +123,11 @@
         "keyword slice")
 (assert (= 'symbol (symbol/slice "some_symbol_slice" 5 11)) "symbol slice")
 
+# String bugs
+(assert (deep= (string/find-all "qq" "qqq") @[0 1]) "string/find-all 1")
+(assert (deep= (string/find-all "q" "qqq") @[0 1 2]) "string/find-all 2")
+(assert (deep= (string/split "qq" "1qqqqz") @["1" "" "z"]) "string/split 1")
+(assert (deep= (string/split "aa" "aaa") @["" "a"]) "string/split 2")
+
 (end-suite)
 

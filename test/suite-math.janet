@@ -43,5 +43,8 @@
 
 (assert-no-error "math/rng-buffer 2" (math/seedrandom "abcdefg"))
 
+(assert (= (math/gcd 462 1071) 21) "math/gcd 1")
+(assert (= (math/lcm 462 1071) 23562) "math/lcm 1")
+
 (end-suite)
 

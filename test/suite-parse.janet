@@ -69,5 +69,19 @@
 # Issue #183 - just parse it :)
 1e-4000000000000000000000
 
+# Issue #861 - should be valgrind clean
+(def step1 "(a b c d)\n")
+(def step2 "(a b)\n")
+(def p1 (parser/new))
+(parser/state p1)
+(parser/consume p1 step1)
+(loop [v :iterate (parser/produce p1)])
+(parser/state p1)
+(def p2 (parser/clone p1))
+(parser/state p2)
+(parser/consume p2 step2)
+(loop [v :iterate (parser/produce p2)])
+(parser/state p2)
+
 (end-suite)
 

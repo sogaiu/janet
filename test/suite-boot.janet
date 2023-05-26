@@ -542,5 +542,117 @@
 (assert (nil? (first @"")) "in vs get 1")
 (assert (nil? (last @"")) "in vs get 1")
 
+# index-of
+(assert (= nil (index-of 10 [])) "index-of 1")
+(assert (= nil (index-of 10 [1 2 3])) "index-of 2")
+(assert (= 1 (index-of 2 [1 2 3])) "index-of 3")
+(assert (= 0 (index-of :a [:a :b :c])) "index-of 4")
+(assert (= nil (index-of :a {})) "index-of 5")
+(assert (= :a (index-of :A {:a :A :b :B})) "index-of 6")
+(assert (= :a (index-of :A @{:a :A :b :B})) "index-of 7")
+(assert (= 0 (index-of (chr "a") "abc")) "index-of 8")
+(assert (= nil (index-of (chr "a") "")) "index-of 9")
+(assert (= nil (index-of 10 @[])) "index-of 10")
+(assert (= nil (index-of 10 @[1 2 3])) "index-of 11")
+
+# Regression
+(assert (= {:x 10} (|(let [x $] ~{:x ,x}) 10)) "issue 463")
+
+# macex testing
+(assert (deep= (macex1 '~{1 2 3 4}) '~{1 2 3 4}) "macex1 qq struct")
+(assert (deep= (macex1 '~@{1 2 3 4}) '~@{1 2 3 4}) "macex1 qq table")
+(assert (deep= (macex1 '~(1 2 3 4)) '~[1 2 3 4]) "macex1 qq tuple")
+(assert (= :brackets (tuple/type (1 (macex1 '~[1 2 3 4]))))
+        "macex1 qq bracket tuple")
+(assert (deep= (macex1 '~@[1 2 3 4 ,blah]) '~@[1 2 3 4 ,blah])
+        "macex1 qq array")
+
+# Sourcemaps in threading macros
+(defn check-threading [macro expansion]
+  (def expanded (macex1 (tuple macro 0 '(x) '(y))))
+  (assert (= expanded expansion) (string macro " expansion value"))
+  (def smap-x (tuple/sourcemap (get expanded 1)))
+  (def smap-y (tuple/sourcemap expanded))
+  (def line first)
+  (defn column [t] (t 1))
+  (assert (not= smap-x [-1 -1]) (string macro " x sourcemap existence"))
+  (assert (not= smap-y [-1 -1]) (string macro " y sourcemap existence"))
+  (assert (or (< (line smap-x) (line smap-y))
+              (and (= (line smap-x) (line smap-y))
+                   (< (column smap-x) (column smap-y))))
+          (string macro " relation between x and y sourcemap")))
+
+(check-threading '-> '(y (x 0)))
+(check-threading '->> '(y (x 0)))
+
+# keep-syntax
+(let [brak '[1 2 3]
+      par '(1 2 3)]
+
+  (tuple/setmap brak 2 1)
+
+  (assert (deep= (keep-syntax brak @[1 2 3]) @[1 2 3])
+          "keep-syntax brackets ignore array")
+  (assert (= (keep-syntax! brak @[1 2 3]) '[1 2 3])
+          "keep-syntax! brackets replace array")
+
+  (assert (= (keep-syntax! par (map inc @[1 2 3])) '(2 3 4))
+          "keep-syntax! parens coerce array")
+  (assert (not= (keep-syntax! brak @[1 2 3]) '(1 2 3))
+          "keep-syntax! brackets not parens")
+  (assert (not= (keep-syntax! par @[1 2 3]) '[1 2 3])
+          "keep-syntax! parens not brackets")
+  (assert (= (tuple/sourcemap brak)
+             (tuple/sourcemap (keep-syntax! brak @[1 2 3])))
+          "keep-syntax! brackets source map")
+
+  (keep-syntax par brak)
+  (assert (not= (tuple/sourcemap brak) (tuple/sourcemap par))
+          "keep-syntax no mutate")
+  (assert (= (keep-syntax 1 brak) brak) "keep-syntax brackets ignore type"))
+
+# Curenv
+(assert (= (curenv) (curenv 0)) "curenv 1")
+(assert (= (table/getproto (curenv)) (curenv 1)) "curenv 2")
+(assert (= nil (curenv 1000000)) "curenv 3")
+(assert (= root-env (curenv 1)) "curenv 4")
+
+# Import macro test
+(assert-no-error "import macro 1" (macex '(import a :as b :fresh maybe)))
+(assert (deep= ~(,import* "a" :as "b" :fresh maybe)
+               (macex '(import a :as b :fresh maybe))) "import macro 2")
+
+# #477 walk preserving bracket type
+(assert (= :brackets (tuple/type (postwalk identity '[])))
+        "walk square brackets 1")
+(assert (= :brackets (tuple/type (walk identity '[])))
+        "walk square brackets 2")
+
+# Issue #751
+(def t {:side false})
+(assert (nil? (get-in t [:side :note])) "get-in with false value")
+(assert (= (get-in t [:side :note] "dflt") "dflt")
+        "get-in with false value and default")
+
+# Evaluate stream with `dofile`
+(def [r w] (os/pipe))
+(:write w "(setdyn :x 10)")
+(:close w)
+(def stream-env (dofile r))
+(assert (= (stream-env :x) 10) "dofile stream 1")
+
+# Test thaw and freeze
+(def table-to-freeze @{:c 22 :b [1 2 3 4] :d @"test" :e "test2"})
+(def table-to-freeze-with-inline-proto
+  @{:a @[1 2 3] :b @[1 2 3 4] :c 22 :d @"test" :e @"test2"})
+(def struct-to-thaw
+  (struct/with-proto {:a [1 2 3]} :c 22 :b [1 2 3 4] :d "test" :e "test2"))
+(table/setproto table-to-freeze @{:a @[1 2 3]})
+
+(assert (deep= {:a [1 2 3] :b [1 2 3 4] :c 22 :d "test" :e "test2"}
+               (freeze table-to-freeze)))
+(assert (deep= table-to-freeze-with-inline-proto (thaw table-to-freeze)))
+(assert (deep= table-to-freeze-with-inline-proto (thaw struct-to-thaw)))
+
 (end-suite)
 

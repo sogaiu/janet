@@ -100,5 +100,33 @@
 (def res (resume f))
 (assert-error :abc (propagate res f) "propagate 1")
 
+# Cancel test
+(def f (fiber/new (fn [&] (yield 1) (yield 2) (yield 3) 4) :yti))
+(assert (= 1 (resume f)) "cancel resume 1")
+(assert (= 2 (resume f)) "cancel resume 2")
+(assert (= :hi (cancel f :hi)) "cancel resume 3")
+(assert (= :error (fiber/status f)) "cancel resume 4")
+
+# Comparisons
+(assert (> 1e23 100) "less than immediate 1")
+(assert (> 1e23 1000) "less than immediate 2")
+(assert (< 100 1e23) "greater than immediate 1")
+(assert (< 1000 1e23) "greater than immediate 2")
+
+# Regression #638
+(compwhen
+  (dyn 'ev/go)
+  (assert
+    (= [true :caught]
+       (protect
+         (try
+           (do
+             (ev/sleep 0)
+             (with-dyns []
+               (ev/sleep 0)
+               (error "oops")))
+           ([err] :caught))))
+    "regression #638"))
+
 (end-suite)
 

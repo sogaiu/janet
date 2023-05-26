@@ -360,5 +360,89 @@
 # Inline 3 argument get
 (assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
 
+#
+# Longstring indentation
+#
+
+(defn reindent
+  "Reindent the contents of a longstring as the Janet parser would.
+  This include removing leading and trailing newlines."
+  [text indent]
+
+  # Detect minimum indent
+  (var rewrite true)
+  (each index (string/find-all "\n" text)
+    (for i (+ index 1) (+ index indent 1)
+      (case (get text i)
+        nil (break)
+        (chr "\n") (break)
+        (chr " ") nil
+        (set rewrite false))))
+
+  # Only re-indent if no dedented characters.
+  (def str
+    (if rewrite
+      (peg/replace-all ~(* "\n" (between 0 ,indent " ")) "\n" text)
+      text))
+
+  (def first-nl (= (chr "\n") (first str)))
+  (def last-nl (= (chr "\n") (last str)))
+  (string/slice str (if first-nl 1 0) (if last-nl -2)))
+
+(defn reindent-reference
+  "Same as reindent but use parser functionality. Useful for validating conformance."
+  [text indent]
+  (if (empty? text) (break text))
+  (def source-code
+    (string (string/repeat " " indent) "``````"
+            text
+            "``````"))
+  (parse source-code))
+
+(var indent-counter 0)
+(defn check-indent
+  [text indent]
+  (++ indent-counter)
+  (let [a (reindent text indent)
+        b (reindent-reference text indent)]
+    (assert (= a b) (string "indent " indent-counter " (indent=" indent ")"))))
+
+(check-indent "" 0)
+(check-indent "\n" 0)
+(check-indent "\n" 1)
+(check-indent "\n\n" 0)
+(check-indent "\n\n" 1)
+(check-indent "\nHello, world!" 0)
+(check-indent "\nHello, world!" 1)
+(check-indent "Hello, world!" 0)
+(check-indent "Hello, world!" 1)
+(check-indent "\n    Hello, world!" 4)
+(check-indent "\n    Hello, world!\n" 4)
+(check-indent "\n    Hello, world!\n   " 4)
+(check-indent "\n    Hello, world!\n    " 4)
+(check-indent "\n    Hello, world!\n   dedented text\n    " 4)
+(check-indent "\n    Hello, world!\n    indented text\n    " 4)
+
+# Struct prototypes
+(def x (struct/with-proto {1 2 3 4} 5 6))
+(def y (-> x marshal unmarshal))
+(def z {1 2 3 4})
+(assert (= 2 (get x 1)) "struct get proto value 1")
+(assert (= 4 (get x 3)) "struct get proto value 2")
+(assert (= 6 (get x 5)) "struct get proto value 3")
+(assert (= x y) "struct proto marshal equality 1")
+(assert (= (getproto x) (getproto y)) "struct proto marshal equality 2")
+(assert (= 0 (cmp x y)) "struct proto comparison 1")
+(assert (= 0 (cmp (getproto x) (getproto y))) "struct proto comparison 2")
+(assert (not= (cmp x z) 0) "struct proto comparison 3")
+(assert (not= (cmp y z) 0) "struct proto comparison 4")
+(assert (not= x z) "struct proto comparison 5")
+(assert (not= y z) "struct proto comparison 6")
+(assert (= (x 5) 6) "struct proto get 1")
+(assert (= (y 5) 6) "struct proto get 1")
+(assert (deep= x y) "struct proto deep= 1")
+(assert (deep-not= x z) "struct proto deep= 2")
+(assert (deep-not= y z) "struct proto deep= 3")
+
 (end-suite)
 

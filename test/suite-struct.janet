@@ -48,5 +48,9 @@
 (assert (= {:a 3 :b 2} (struct :a 1 :b 2 :a 3))
         "struct constructor duplicate keys")
 
+# Check missing struct proto bug.
+(assert (struct/getproto (struct/with-proto {:a 1} :b 2 :c nil))
+        "missing struct proto")
+
 (end-suite)
 
