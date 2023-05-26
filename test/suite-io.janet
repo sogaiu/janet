@@ -62,5 +62,16 @@
   (assert (= 0 (file/tell f)) "start of file again")
   (assert (= (string (file/read f :all)) "foo\n") "temp files work"))
 
+# issue #1055
+(let [b @""]
+  (defn dummy [a b c]
+    (+ a b c))
+  (trace dummy)
+  (defn errout [arg]
+    (buffer/push b arg))
+  (assert (= 6 (with-dyns [*err* errout] (dummy 1 2 3)))
+          "trace to custom err function")
+  (assert (deep= @"trace (dummy 1 2 3)\n" b) "trace buffer correct"))
+
 (end-suite)
 

@@ -54,5 +54,8 @@
 (assert (< [1 2 3] [1 2 3 -1]) "tuple comparison 5")
 (assert (> [1 2 3] [1 2]) "tuple comparison 6")
 
+# issue #928
+(assert (= (hash 0) (hash (* -1 0))) "hash -0 same as hash 0")
+
 (end-suite)
 

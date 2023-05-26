@@ -46,5 +46,10 @@
 (assert (= (math/gcd 462 1071) 21) "math/gcd 1")
 (assert (= (math/lcm 462 1071) 23562) "math/lcm 1")
 
+# math gamma
+
+(assert (< 11899423.08 (math/gamma 11.5) 11899423.085) "math/gamma")
+(assert (< 2605.1158 (math/log-gamma 500) 2605.1159) "math/log-gamma")
+
 (end-suite)
 

@@ -444,5 +444,38 @@
 (assert (deep-not= x z) "struct proto deep= 2")
 (assert (deep-not= y z) "struct proto deep= 3")
 
+# missing symbols - #914
+
+(defn lookup-symbol [sym] (defglobal sym 10) (dyn sym))
+
+(setdyn :missing-symbol lookup-symbol)
+
+(assert (= (eval-string "(+ a 5)") 15) "lookup missing symbol")
+
+(setdyn :missing-symbol nil)
+(setdyn 'a nil)
+
+(assert-error "compile error" (eval-string "(+ a 5)"))
+
+(assert-error
+  "table rawget regression"
+  (table/new -1))
+
+# Named arguments
+(defn named-arguments
+  [&named bob sally joe]
+  (+ bob sally joe))
+
+(assert (= 15 (named-arguments :bob 3 :sally 5 :joe 7)) "named arguments 1")
+
+(defn named-opt-arguments
+  [&opt x &named a b c]
+  (+ x a b c))
+
+(assert (= 10 (named-opt-arguments 1 :a 2 :b 3 :c 4)) "named arguments 2")
+
+(def f (asm (disasm (fn [x] (fn [y] (+ x y))))))
+(assert (= ((f 10) 37) 47) "asm environment tables")
+
 (end-suite)
 

@@ -165,5 +165,14 @@
                  (fn [])
                  (error "should not happen"))) "strangeloop 2")
 
+# issue #919
+(defn test
+  []
+  (var x 1)
+  (set x ~(,x ()))
+  x)
+
+(assert (= (test) '(1 ())) "issue #919")
+
 (end-suite)
 
