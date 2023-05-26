@@ -19,7 +19,7 @@
 # IN THE SOFTWARE.
 
 (import ./helper :prefix "" :exit true)
-(start-suite 9)
+(start-suite)
 
 # Subprocess
 
@@ -30,18 +30,22 @@
   (let [p (os/spawn [janet "-e" `(print "hello")`] :p {:out :pipe})]
     (os/proc-wait p)
     (def x (:read (p :out) :all))
-    (assert (deep= "hello" (string/trim x)) "capture stdout from os/spawn pre close."))
+    (assert (deep= "hello" (string/trim x))
+            "capture stdout from os/spawn pre close."))
 
   (let [p (os/spawn [janet "-e" `(print "hello")`] :p {:out :pipe})]
     (def x (:read (p :out) 1024))
     (os/proc-wait p)
-    (assert (deep= "hello" (string/trim x)) "capture stdout from os/spawn post close."))
+    (assert (deep= "hello" (string/trim x))
+            "capture stdout from os/spawn post close."))
 
-  (let [p (os/spawn [janet "-e" `(file/read stdin :line)`] :px {:in :pipe})]
+  (let [p (os/spawn [janet "-e" `(file/read stdin :line)`] :px
+                    {:in :pipe})]
     (:write (p :in) "hello!\n")
     (assert-no-error "pipe stdin to process" (os/proc-wait p))))
 
-(let [p (os/spawn [janet "-e" `(print (file/read stdin :line))`] :px {:in :pipe :out :pipe})]
+(let [p (os/spawn [janet "-e" `(print (file/read stdin :line))`] :px
+                  {:in :pipe :out :pipe})]
   (:write (p :in) "hello!\n")
   (def x (:read (p :out) 1024))
   (assert-no-error "pipe stdin to process 2" (os/proc-wait p))
@@ -62,7 +66,8 @@
 (defn calc-1
   "Run subprocess, read from stdout, then wait on subprocess."
   [code]
-  (let [p (os/spawn [janet "-e" (string `(printf "%j" ` code `)`)] :px {:out :pipe})]
+  (let [p (os/spawn [janet "-e" (string `(printf "%j" ` code `)`)] :px
+                    {:out :pipe})]
     (os/proc-wait p)
     (def output (:read (p :out) :all))
     (parse output)))
@@ -76,9 +81,13 @@
     @[10 26 42]) "parallel subprocesses 1")
 
 (defn calc-2
-  "Run subprocess, wait on subprocess, then read from stdout. Read only up to 10 bytes instead of :all"
+  ``
+  Run subprocess, wait on subprocess, then read from stdout. Read only up
+  to 10 bytes instead of :all
+  ``
   [code]
-  (let [p (os/spawn [janet "-e" (string `(printf "%j" ` code `)`)] :px {:out :pipe})]
+  (let [p (os/spawn [janet "-e" (string `(printf "%j" ` code `)`)] :px
+                    {:out :pipe})]
     (def output (:read (p :out) 10))
     (os/proc-wait p)
     (parse output)))
@@ -105,7 +114,8 @@
 # Issue #593
 (assert-no-error "file writing 3"
   (def outfile (file/open "unique.txt" :w))
-  (os/execute [janet "-e" "(pp (seq [i :range (1 10)] i))"] :p {:out outfile})
+  (os/execute [janet "-e" "(pp (seq [i :range (1 10)] i))"] :p
+              {:out outfile})
   (file/flush outfile)
   (file/close outfile)
   (os/rm "unique.txt"))
@@ -118,7 +128,8 @@
      (:write outstream "123\n")
      (:write outstream "456\n"))
    # Cast to string to enable comparison
-   (assert (= "123\n456\n" (string (slurp "unique.txt"))) "File writing 4.2")
+   (assert (= "123\n456\n" (string (slurp "unique.txt")))
+           "File writing 4.2")
    (os/rm "unique.txt"))
 
 # Test that the stream created by os/open can be read from
@@ -131,10 +142,11 @@
 
     (def outstream (os/open "unique.txt" :r))
     (defer (:close outstream)
-      (assert (= "123\n456\n" (string (:read outstream :all))) "File reading 1.2"))
+      (assert (= "123\n456\n" (string (:read outstream :all)))
+              "File reading 1.2"))
     (os/rm "unique.txt")))
 
-  # ev/gather
+# ev/gather
 
 (assert (deep= @[1 2 3] (ev/gather 1 2 3)) "ev/gather 1")
 (assert (deep= @[] (ev/gather)) "ev/gather 2")
@@ -268,7 +280,8 @@
 (assert att "`att` was nil after creation")
 (ev/give ch att)
 (ev/do-thread
-  (assert (ev/take ch) "channel packing bug for threaded abstracts on threaded channels."))
+  (assert (ev/take ch)
+          "channel packing bug for threaded abstracts on threaded channels."))
 
 # marshal channels
 
@@ -282,3 +295,4 @@
 (assert (= item2 "world"))
 
 (end-suite)
+
