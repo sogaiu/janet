@@ -654,5 +654,12 @@
 (assert (deep= table-to-freeze-with-inline-proto (thaw table-to-freeze)))
 (assert (deep= table-to-freeze-with-inline-proto (thaw struct-to-thaw)))
 
+(var counter 0)
+(def thunk (delay (++ counter)))
+(assert (= (thunk) 1) "delay 1")
+(assert (= counter 1) "delay 2")
+(assert (= (thunk) 1) "delay 3")
+(assert (= counter 1) "delay 4")
+
 (end-suite)
 

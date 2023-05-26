@@ -19,14 +19,7 @@
 # IN THE SOFTWARE.
 
 (import ./helper :prefix "" :exit true)
-(start-suite 12)
-
-(var counter 0)
-(def thunk (delay (++ counter)))
-(assert (= (thunk) 1) "delay 1")
-(assert (= counter 1) "delay 2")
-(assert (= (thunk) 1) "delay 3")
-(assert (= counter 1) "delay 4")
+(start-suite)
 
 (def has-ffi (dyn 'ffi/native))
 
@@ -49,7 +42,8 @@
   (assert (= 4 (ffi/align [:int :char])) "align 1")
   (assert (= 1 (ffi/align [:pack :int :char])) "align 2")
   (assert (= 1 (ffi/align [:int :char :pack-all])) "align 3")
-  (assert (= 26 (ffi/size [:char :pack :int @[:char 21]])) "array struct size"))
+  (assert (= 26 (ffi/size [:char :pack :int @[:char 21]]))
+          "array struct size"))
 
 (end-suite)
 
