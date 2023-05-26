@@ -21,6 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# 8a346ec
 (assert (= (string/join @["one" "two" "three"]) "onetwothree")
         "string/join 1 argument")
 (assert (= (string/join @["one" "two" "three"] ", ") "one, two, three")
@@ -30,7 +31,7 @@
 (assert (= (string/find "123" "abc123def") 3) "string/find positive")
 (assert (= (string/find "1234" "abc123def") nil) "string/find negative")
 
-# String functions
+# String functions - f41dab8f6
 (assert (= 3 (string/find "abc" "   abcdefghijklmnop")) "string/find 1")
 (assert (= 0 (string/find "A" "A")) "string/find 2")
 (assert (string/has-prefix? "" "foo") "string/has-prefix? 1")
@@ -88,6 +89,7 @@
 (assert (deep= (string/find-all "," "onetwothree") @[])
         "string/find-all 2")
 
+# b26a7bb22
 (assert-error "string/find error 1" (string/find "" "abcd"))
 (assert-error "string/split error 1" (string/split "" "abcd"))
 (assert-error "string/replace error 1" (string/replace "" "." "abcd"))
@@ -95,7 +97,13 @@
               (string/replace-all "" "." "abcdabcd"))
 (assert-error "string/find-all error 1" (string/find-all "" "abcd"))
 
-# some tests for string/format
+# String bugs - bcba0c027
+(assert (deep= (string/find-all "qq" "qqq") @[0 1]) "string/find-all 1")
+(assert (deep= (string/find-all "q" "qqq") @[0 1 2]) "string/find-all 2")
+(assert (deep= (string/split "qq" "1qqqqz") @["1" "" "z"]) "string/split 1")
+(assert (deep= (string/split "aa" "aaa") @["" "a"]) "string/split 2")
+
+# some tests for string/format - 0f0c415
 
 (assert (= (string/format "pi = %6.3f" math/pi) "pi =  3.142") "%6.3f")
 (assert (= (string/format "pi = %+6.3f" math/pi) "pi = +3.142") "%6.3f")
@@ -107,7 +115,7 @@
 (assert (= (string/format "\xCF\x80 = %.8g" math/pi) "\xCF\x80 = 3.1415927")
         "\xCF\x80")
 
-# String check-set
+# String check-set - b4e25e559
 (assert (string/check-set "abc" "a") "string/check-set 1")
 (assert (not (string/check-set "abc" "z")) "string/check-set 2")
 (assert (string/check-set "abc" "abc") "string/check-set 3")
@@ -115,19 +123,13 @@
 (assert (not (string/check-set "" "aabc")) "string/check-set 5")
 (assert (not (string/check-set "abc" "abcdefg")) "string/check-set 6")
 
-# Trim empty string
+# Trim empty string - issue #174 - 9b605b27b
 (assert (= "" (string/trim " ")) "string/trim regression")
 
-# Keyword and Symbol slice
+# Keyword and Symbol slice - e9911fee4
 (assert (= :keyword (keyword/slice "some_keyword_slice" 5 12))
         "keyword slice")
 (assert (= 'symbol (symbol/slice "some_symbol_slice" 5 11)) "symbol slice")
-
-# String bugs
-(assert (deep= (string/find-all "qq" "qqq") @[0 1]) "string/find-all 1")
-(assert (deep= (string/find-all "q" "qqq") @[0 1 2]) "string/find-all 2")
-(assert (deep= (string/split "qq" "1qqqqz") @["1" "" "z"]) "string/split 1")
-(assert (deep= (string/split "aa" "aaa") @["" "a"]) "string/split 2")
 
 (end-suite)
 
