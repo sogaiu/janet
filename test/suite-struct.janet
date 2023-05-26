@@ -21,8 +21,10 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# 21bd960
 (assert (= (struct 1 2 3 4 5 6 7 8) (struct 7 8 5 6 3 4 1 2))
         "struct order does not matter 1")
+# 42a88de
 (assert (= (struct
              :apple 1
              6 :bork
@@ -43,12 +45,12 @@
 (assert (= (length (struct 2 1 3 nil)) 1) "nil value struct ctor")
 (assert (= (length {1 2 3 nil}) 1) "nil value struct literal")
 
-# Struct duplicate elements
+# Struct duplicate elements - 8bc2987a7
 (assert (= {:a 3 :b 2} {:a 1 :b 2 :a 3}) "struct literal duplicate keys")
 (assert (= {:a 3 :b 2} (struct :a 1 :b 2 :a 3))
         "struct constructor duplicate keys")
 
-# Check missing struct proto bug.
+# Check missing struct proto bug - 868ec1a7e, e08394c8
 (assert (struct/getproto (struct/with-proto {:a 1} :b 2 :c nil))
         "missing struct proto")
 
