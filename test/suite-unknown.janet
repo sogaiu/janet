@@ -484,7 +484,7 @@
 # 88813c4
 (assert (deep= (in (disasm (defn a [] (def x 10) x)) :symbolmap)
                @[[0 3 0 'a] [1 3 1 'x]])
-        "symbolslots when *debug* is true")
+        "symbolmap when *debug* is true")
 
 (defn a [arg]
   (def x 10)
@@ -504,7 +504,7 @@
   (def f (fn [x] (fn [y] (+ x y))))
   (assert (deep= (map last (in (disasm (f 10)) :symbolmap))
                  @['x 'y])
-          "symbolslots upvalues"))
+          "symbolmap upvalues"))
 
 (assert (deep= (in (disasm (defn a [arg]
                              (def x 10)
@@ -517,7 +517,7 @@
                  [1 7 2 'x]
                  [2 7 3 'y]
                  [3 7 4 'z]])
-        "arg & inner symbolslots")
+        "arg & inner symbolmap")
 
 (end-suite)
 
