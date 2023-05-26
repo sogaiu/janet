@@ -21,6 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# 3e1e25854
 (def test-struct {'def 1 'bork 2 'sam 3 'a 'b 'het @[1 2 3 4 5]})
 (assert (= (get test-struct 'def) 1) "struct get")
 (assert (= (get test-struct 'bork) 2) "struct get")
@@ -28,7 +29,7 @@
 (assert (= (get test-struct 'a) 'b) "struct get")
 (assert (= :array (type (get test-struct 'het))) "struct get")
 
-# Buffer stuff
+# Buffer stuff - 910cfd7dd
 (defn buffer=
   [a b]
   (= (string a) (string b)))
@@ -46,7 +47,7 @@
 
 (assert (= (length @"abcdef") 6) "buffer length")
 
-# Tuple comparison
+# Tuple comparison - da438a93e
 (assert (< [1 2 3] [2 2 3]) "tuple comparison 1")
 (assert (< [1 2 3] [2 2]) "tuple comparison 2")
 (assert (< [1 2 3] [2 2 3 4]) "tuple comparison 3")
@@ -54,7 +55,7 @@
 (assert (< [1 2 3] [1 2 3 -1]) "tuple comparison 5")
 (assert (> [1 2 3] [1 2]) "tuple comparison 6")
 
-# issue #928
+# issue #928 - d7ea122cf
 (assert (= (hash 0) (hash (* -1 0))) "hash -0 same as hash 0")
 
 (end-suite)

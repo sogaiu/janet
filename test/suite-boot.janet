@@ -617,7 +617,7 @@
           "keep-syntax no mutate")
   (assert (= (keep-syntax 1 brak) brak) "keep-syntax brackets ignore type"))
 
-# Curenv
+# Curenv - 28439d822, f7c556e
 (assert (= (curenv) (curenv 0)) "curenv 1")
 (assert (= (table/getproto (curenv)) (curenv 1)) "curenv 2")
 (assert (= nil (curenv 1000000)) "curenv 3")

@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Gensym tests
+# Gensym tests - 3ccd68843
 
 (assert (not= (gensym) (gensym)) "two gensyms not equal")
 ((fn []
@@ -32,6 +32,7 @@
      (set counter (+ 1 counter)))
    (assert (= (length syms) 128) "many symbols")))
 
+# issue #753 - a78cbd91d
 (assert (pos? (length (gensym))) "gensym not empty, regression #753")
 
 (end-suite)

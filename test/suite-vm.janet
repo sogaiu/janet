@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# More fiber semantics
+# More fiber semantics - 0fd9224e4
 
 (var myvar 0)
 (defn fiberstuff [&]
@@ -50,7 +50,7 @@
 (assert (deep= @[:item :item :item :item :item :end] items)
         "yield within nested fibers")
 
-# Calling non functions
+# Calling non functions - b9c0fc820
 
 (assert (= 1 ({:ok 1} :ok)) "calling struct")
 (assert (= 2 (@{:ok 2} :ok)) "calling table")
@@ -61,7 +61,7 @@
 (assert (= :oops (try ((+ 2 -1) 1) ([err] :oops)))
         "calling number fails")
 
-# Method test
+# Method test - d5bab7262
 
 (def Dog @{:bark (fn bark [self what]
                    (string (self :name) " says " what "!"))})
@@ -73,7 +73,7 @@
 (def spot (make-dog "spot"))
 (assert (= "spot says hi!" (:bark spot "hi")) "oo 2")
 
-# Negative tests
+# Negative tests - 67f26b7d7
 
 (assert-error "+ check types" (+ 1 ()))
 (assert-error "- check types" (- 1 ()))
@@ -84,36 +84,13 @@
 (assert-error "bxor check types" (bxor 1 ()))
 (assert-error "bnot check types" (bnot ()))
 
-# Dynamic bindings
-(setdyn :a 10)
-(assert (= 40 (with-dyns [:a 25 :b 15] (+ (dyn :a) (dyn :b)))) "dyn usage 1")
-(assert (= 10 (dyn :a)) "dyn usage 2")
-(assert (= nil (dyn :b)) "dyn usage 3")
-(setdyn :a 100)
-(assert (= 100 (dyn :a)) "dyn usage 4")
-
-#
-# Test propagation of signals via fibers
-#
-
-(def f (fiber/new (fn [] (error :abc) 1) :ei))
-(def res (resume f))
-(assert-error :abc (propagate res f) "propagate 1")
-
-# Cancel test
-(def f (fiber/new (fn [&] (yield 1) (yield 2) (yield 3) 4) :yti))
-(assert (= 1 (resume f)) "cancel resume 1")
-(assert (= 2 (resume f)) "cancel resume 2")
-(assert (= :hi (cancel f :hi)) "cancel resume 3")
-(assert (= :error (fiber/status f)) "cancel resume 4")
-
-# Comparisons
+# Comparisons - 10dcbc639
 (assert (> 1e23 100) "less than immediate 1")
 (assert (> 1e23 1000) "less than immediate 2")
 (assert (< 100 1e23) "greater than immediate 1")
 (assert (< 1000 1e23) "greater than immediate 2")
 
-# Regression #638
+# Regression #638 - c68264802
 (compwhen
   (dyn 'ev/go)
   (assert

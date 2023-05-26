@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Denormal tables
+# Denormal tables - 38a7e4faf
 
 (assert (= (length @{1 2 nil 3}) 1) "nil key table literal")
 (assert (= (length (table 1 2 nil 3)) 1) "nil key table ctor")
@@ -37,7 +37,7 @@
 (assert (deep= @{:a 3 :b 2} (table :a 1 :b 2 :a 3))
         "table constructor duplicate keys")
 
-## Table prototypes
+## Table prototypes - 027b2a81c
 
 (def roottab @{
  :parentprop 123
@@ -54,7 +54,7 @@
 (assert (= nil (get roottab :childprop)) "table get 2")
 (assert (= 456 (get childtab :childprop)) "proto no effect")
 
-# table/clone
+# table/clone - 392813667
 
 (defn check-table-clone [x msg]
   (assert (= (table/to-struct x) (table/to-struct (table/clone x))) msg))

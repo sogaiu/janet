@@ -133,6 +133,21 @@
 (assert (= 3 (resume t)) "return from fiber")
 (assert (= (fiber/status t) :dead) "finished fiber is dead")
 
+#
+# Test propagation of signals via fibers - b8032ec61
+#
+
+(def f (fiber/new (fn [] (error :abc) 1) :ei))
+(def res (resume f))
+(assert-error :abc (propagate res f) "propagate 1")
+
+# Cancel test - 28439d822
+(def f (fiber/new (fn [&] (yield 1) (yield 2) (yield 3) 4) :yti))
+(assert (= 1 (resume f)) "cancel resume 1")
+(assert (= 2 (resume f)) "cancel resume 2")
+(assert (= :hi (cancel f :hi)) "cancel resume 3")
+(assert (= :error (fiber/status f)) "cancel resume 4")
+
 # Var arg tests - f054586
 
 (def vargf (fn [more] (apply + more)))
@@ -319,6 +334,16 @@
 
 (def t (put @{} :hi 1))
 (assert (deep= t @{:hi 1}) "regression #24")
+
+# Tuple types - c6edf03ae
+
+(assert (= (tuple/type '(1 2 3)) :parens) "normal tuple")
+(assert (= (tuple/type [1 2 3]) :parens) "normal tuple 1")
+(assert (= (tuple/type '[1 2 3]) :brackets) "bracketed tuple 2")
+(assert (= (tuple/type (-> '(1 2 3) marshal unmarshal)) :parens)
+        "normal tuple marshalled/unmarshalled")
+(assert (= (tuple/type (-> '[1 2 3] marshal unmarshal)) :brackets)
+        "normal tuple marshalled/unmarshalled")
 
 # Bracket tuple issue - 340a6c4
 

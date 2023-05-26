@@ -32,7 +32,7 @@
              '(1 2 3) 5
              :apple 1)) "struct order does not matter 2")
 
-# Denormal structs
+# Denormal structs - 38a7e4faf
 
 (assert (= (length {1 2 nil 3}) 1) "nil key struct literal")
 (assert (= (length (struct 1 2 nil 3)) 1) "nil key struct ctor")
