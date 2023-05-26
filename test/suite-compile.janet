@@ -48,5 +48,7 @@
 
 (assert (= var-b "hello") "regression 1")
 
+(assert (= (string '()) (string [])) "empty bracket tuple literal")
+
 (end-suite)
 

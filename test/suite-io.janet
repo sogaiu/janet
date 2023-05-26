@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Calvin Rose
+# Copyright (c) 2023 Calvin Rose & contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -21,17 +21,46 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Gensym tests
+# Printing to buffers
+(def out-buf @"")
+(def err-buf @"")
+(with-dyns [:out out-buf :err err-buf]
+  (print "Hello")
+  (prin "hi")
+  (eprint "Sup")
+  (eprin "not much."))
 
-(assert (not= (gensym) (gensym)) "two gensyms not equal")
-((fn []
-   (def syms (table))
-   (var counter 0)
-   (while (< counter 128)
-     (put syms (gensym) true)
-     (set counter (+ 1 counter)))
-   (assert (= (length syms) 128) "many symbols")))
+(assert (= (string out-buf) "Hello\nhi") "print and prin to buffer 1")
+(assert (= (string err-buf) "Sup\nnot much.")
+        "eprint and eprin to buffer 1")
 
-(assert (pos? (length (gensym))) "gensym not empty, regression #753")
+# Printing to functions
+(def out-buf @"")
+(defn prepend [x]
+  (with-dyns [:out out-buf]
+    (prin "> " x)))
+(with-dyns [:out prepend]
+  (print "Hello world"))
+
+(assert (= (string out-buf) "> Hello world\n")
+        "print to buffer via function")
+
+# Appending buffer to self
+
+(with-dyns [:out @""]
+  (prin "abcd")
+  (prin (dyn :out))
+  (prin (dyn :out))
+  (assert (deep= (dyn :out) @"abcdabcdabcdabcd") "print buffer to self"))
+
+(with [f (file/temp)]
+  (assert (= 0 (file/tell f)) "start of file")
+  (file/write f "foo\n")
+  (assert (= 4 (file/tell f)) "after written string")
+  (file/flush f)
+  (file/seek f :set 0)
+  (assert (= 0 (file/tell f)) "start of file again")
+  (assert (= (string (file/read f :all)) "foo\n") "temp files work"))
 
 (end-suite)
+

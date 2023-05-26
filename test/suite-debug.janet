@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Calvin Rose
+# Copyright (c) 2023 Calvin Rose & contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to
@@ -21,17 +21,12 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Gensym tests
-
-(assert (not= (gensym) (gensym)) "two gensyms not equal")
-((fn []
-   (def syms (table))
-   (var counter 0)
-   (while (< counter 128)
-     (put syms (gensym) true)
-     (set counter (+ 1 counter)))
-   (assert (= (length syms) 128) "many symbols")))
-
-(assert (pos? (length (gensym))) "gensym not empty, regression #753")
+# Simple function break
+(debug/fbreak map 1)
+(def f (fiber/new (fn [] (map inc [1 2 3])) :a))
+(resume f)
+(assert (= :debug (fiber/status f)) "debug/fbreak")
+(debug/unfbreak map 1)
+(map inc [1 2 3])
 
 (end-suite)

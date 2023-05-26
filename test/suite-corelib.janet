@@ -100,5 +100,10 @@
 (assert (= (test-expand "../././././abcd/../def.txt" ":all:") "../def.txt")
         "module/expand-path 8")
 
+# module/expand-path regression
+(with-dyns [:syspath ".janet/.janet"]
+  (assert (= (string (module/expand-path "hello" ":sys:/:all:.janet"))
+             ".janet/.janet/hello.janet") "module/expand-path 1"))
+
 (end-suite)
 

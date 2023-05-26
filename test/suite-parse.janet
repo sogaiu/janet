@@ -66,5 +66,8 @@
 (assert (= [5 7] (parser-location @"(+ 1 2)" [5])) "parser location 2")
 (assert (= [10 10] (parser-location @"(+ 1 2)" [10 10])) "parser location 3")
 
+# Issue #183 - just parse it :)
+1e-4000000000000000000000
+
 (end-suite)
 

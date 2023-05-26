@@ -103,5 +103,8 @@
 (assert (not (string/check-set "" "aabc")) "string/check-set 5")
 (assert (not (string/check-set "abc" "abcdefg")) "string/check-set 6")
 
+# Trim empty string
+(assert (= "" (string/trim " ")) "string/trim regression")
+
 (end-suite)
 

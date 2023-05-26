@@ -23,5 +23,25 @@
 
 (assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
 
+# RNGs
+
+(defn test-rng
+  [rng]
+  (assert (all identity (seq [i :range [0 1000]]
+                             (<= (math/rng-int rng i) i))) "math/rng-int test")
+  (assert (all identity (seq [i :range [0 1000]]
+    (def x (math/rng-uniform rng))
+    (and (>= x 0) (< x 1))))
+          "math/rng-uniform test"))
+
+(def seedrng (math/rng 123))
+(for i 0 75
+  (test-rng (math/rng (:int seedrng))))
+
+(assert (deep-not= (-> 123 math/rng (:buffer 16))
+                   (-> 456 math/rng (:buffer 16))) "math/rng-buffer 1")
+
+(assert-no-error "math/rng-buffer 2" (math/seedrandom "abcdefg"))
+
 (end-suite)
 

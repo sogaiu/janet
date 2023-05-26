@@ -92,5 +92,13 @@
 (setdyn :a 100)
 (assert (= 100 (dyn :a)) "dyn usage 4")
 
+#
+# Test propagation of signals via fibers
+#
+
+(def f (fiber/new (fn [] (error :abc) 1) :ei))
+(def res (resume f))
+(assert-error :abc (propagate res f) "propagate 1")
+
 (end-suite)
 

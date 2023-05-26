@@ -380,5 +380,71 @@
 (comment 1 2 3)
 (comment 1 2 3 4)
 
+# comp should be variadic
+(assert (= 10 ((comp +) 1 2 3 4)) "variadic comp 1")
+(assert (= 11 ((comp inc +) 1 2 3 4)) "variadic comp 2")
+(assert (= 12 ((comp inc inc +) 1 2 3 4)) "variadic comp 3")
+(assert (= 13 ((comp inc inc inc +) 1 2 3 4)) "variadic comp 4")
+(assert (= 14 ((comp inc inc inc inc +) 1 2 3 4)) "variadic comp 5")
+(assert (= 15 ((comp inc inc inc inc inc +) 1 2 3 4)) "variadic comp 6")
+(assert (= 16 ((comp inc inc inc inc inc inc +) 1 2 3 4))
+        "variadic comp 7")
+
+# Function shorthand
+(assert (= (|(+ 1 2 3)) 6) "function shorthand 1")
+(assert (= (|(+ 1 2 3 $) 4) 10) "function shorthand 2")
+(assert (= (|(+ 1 2 3 $0) 4) 10) "function shorthand 3")
+(assert (= (|(+ $0 $0 $0 $0) 4) 16) "function shorthand 4")
+(assert (= (|(+ $ $ $ $) 4) 16) "function shorthand 5")
+(assert (= (|4) 4) "function shorthand 6")
+(assert (= (((|||4))) 4) "function shorthand 7")
+(assert (= (|(+ $1 $1 $1 $1) 2 4) 16) "function shorthand 8")
+(assert (= (|(+ $0 $1 $3 $2 $6) 0 1 2 3 4 5 6) 12) "function shorthand 9")
+(assert (= (|(+ $0 $99) ;(range 100)) 99) "function shorthand 10")
+
+(defn idx= [x y] (= (tuple/slice x) (tuple/slice y)))
+
+# Simple take, drop, etc. tests.
+(assert (idx= (take 10 (range 100)) (range 10)) "take 10")
+(assert (idx= (drop 10 (range 100)) (range 10 100)) "drop 10")
+
+# with-vars
+(var abc 123)
+(assert (= 356 (with-vars [abc 456] (- abc 100))) "with-vars 1")
+(assert-error "with-vars 2" (with-vars [abc 456] (error :oops)))
+(assert (= abc 123) "with-vars 3")
+
+# Top level unquote
+(defn constantly
+  []
+  (comptime (math/random)))
+
+(assert (= (constantly) (constantly)) "comptime 1")
+
+(assert-error "arity issue in macro" (eval '(each [])))
+(assert-error "comptime issue" (eval '(comptime (error "oops"))))
+
+(var counter 0)
+(when-with [x nil |$]
+           (++ counter))
+(when-with [x 10 |$]
+           (+= counter 10))
+
+(assert (= 10 counter) "when-with 1")
+
+(if-with [x nil |$] (++ counter) (+= counter 10))
+(if-with [x true |$] (+= counter 20) (+= counter 30))
+
+(assert (= 40 counter) "if-with 1")
+
+(def a @[])
+(eachk x [:a :b :c :d]
+  (array/push a x))
+(assert (deep= (range 4) a) "eachk 1")
+
+(with-dyns [:err @""]
+  (tracev (def my-unique-var-name true))
+  (assert my-unique-var-name "tracev upscopes"))
+
 (end-suite)
 

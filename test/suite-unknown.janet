@@ -326,5 +326,11 @@
 (assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
 (assert (= ~(,+ 1 2 3) [+ 1 2 3]) "bracket tuples are never function calls")
 
+# Make sure Carriage Returns don't end up in doc strings.
+
+(assert (not (string/find "\r"
+                          (get ((fiber/getenv (fiber/current)) 'cond)
+                               :doc ""))) "no \\r in doc strings")
+
 (end-suite)
 

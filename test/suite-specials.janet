@@ -138,7 +138,24 @@
   (+ x y z a b c))
 
 (assert (= (+ ;(range 6)) (myfn 0 1 2 :a 3 :b 4 :c 5)) "keyword args 1")
-(assert (= (+ ;(range 6)) (myfn 0 1 2 :a 1 :b 6 :c 5 :d 11)) "keyword args 2")
+(assert (= (+ ;(range 6)) (myfn 0 1 2 :a 1 :b 6 :c 5 :d 11))
+        "keyword args 2")
+
+#
+# fn compilation special
+#
+(defn myfn1 [[x y z] & more]
+  more)
+(defn myfn2 [head & more]
+  more)
+(assert (= (myfn1 [1 2 3] 4 5 6) (myfn2 [:a :b :c] 4 5 6))
+        "destructuring and varargs")
+
+# Nested quasiquotation
+
+(def nested ~(a ~(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f))
+(assert (deep= nested '(a ~(b ,(+ 1 2) ,(foo 4 d) e) f))
+        "nested quasiquote")
 
 (end-suite)
 
