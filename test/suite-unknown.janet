@@ -352,6 +352,10 @@
 (assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
 (assert (= ~(,+ 1 2 3) [+ 1 2 3]) "bracket tuples are never function calls")
 
+# Quasiquote bracketed tuples - e239980da
+(assert (= (tuple/type ~[1 2 3]) (tuple/type '[1 2 3]))
+        "quasiquote bracket tuples")
+
 # Make sure Carriage Returns don't end up in doc strings - e528b86
 
 (assert (not (string/find "\r"

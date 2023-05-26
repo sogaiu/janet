@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Regression Test #137
+# Regression Test issue #137 - affcb5b45
 (def [a b c] (range 10))
 (assert (= a 0) "regression #137 (1)")
 (assert (= b 1) "regression #137 (2)")
@@ -32,7 +32,7 @@
 (assert (= y 1) "regression #137 (5)")
 (assert (= z 2) "regression #137 (6)")
 
-# Test destructuring
+# Test destructuring - 23dcfb986
 (do
   (def test-tab @{:a 1 :b 2})
   (def {:a a :b b} test-tab)
@@ -44,6 +44,8 @@
   (assert (= a 1) "dictionary destructuring 3")
   (assert (= b 2) "dictionary destructuring 4")
   (assert (= c 4) "dictionary destructuring 5 - expression as key"))
+
+# cb5af974a
 (let [test-tuple [:a :b 1 2]]
   (def [a b one two] test-tuple)
   (assert (= a :a) "tuple destructuring 1")
@@ -58,12 +60,16 @@
   (assert (= a :a) "tuple destructuring 6 - rest")
   (assert (= b :b) "tuple destructuring 7 - rest")
   (assert (= rest [nil :d]) "tuple destructuring 8 - rest"))
+
+# 71cffc973
 (do
   (def [[a b] x & rest] [[1 2] :a :c :b :a])
   (assert (= a 1) "tuple destructuring 9 - rest")
   (assert (= b 2) "tuple destructuring 10 - rest")
   (assert (= x :a) "tuple destructuring 11 - rest")
   (assert (= rest [:c :b :a]) "tuple destructuring 12 - rest"))
+
+# 651e12cfe
 (do
   (def [a b & rest] [:a :b])
   (assert (= a :a) "tuple destructuring 13 - rest")
@@ -78,7 +84,7 @@
   (assert (= r1 [1 2]) "tuple destructuring 19 - rest")
   (assert (= r2 [3 4]) "tuple destructuring 20 - rest"))
 
-# Metadata
+# Metadata - ec2d7bf34
 
 (def foo-with-tags :a-tag :bar)
 (assert (get (dyn 'foo-with-tags) :a-tag)
@@ -98,7 +104,7 @@
            (get (dyn 'foo-fn-with-meta) :doc))
         "extra string in defn is docstring")
 
-# Break
+# Break - 4a111b38b
 
 (var summation 0)
 (for i 0 10
@@ -108,17 +114,13 @@
 
 (assert (= nil ((fn [] (break) 4))) "break 2")
 
-# Break with value
+# Break with value - 8ba112116
 
 # Shouldn't error out
 (assert-no-error "break 3" (for i 0 10 (if (> i 8) (break i))))
 (assert-no-error "break 4" ((fn [i] (if (> i 8) (break i))) 100))
 
-# Quasiquote bracketed tuples
-(assert (= (tuple/type ~[1 2 3]) (tuple/type '[1 2 3]))
-        "quasiquote bracket tuples")
-
-# No useless splices
+# No useless splices - 7d57f8700
 (check-compile-error '((splice [1 2 3]) 0))
 (check-compile-error '(if ;[1 2] 5))
 (check-compile-error '(while ;[1 2 3] (print :hi)))
@@ -133,7 +135,7 @@
 (check-compile-error '(+ 1 (if true ;[3 4])))
 (check-compile-error '(+ 1 (if false nil ;[3 4])))
 
-# Keyword arguments
+# Keyword arguments - 3f137ed0b
 (defn myfn [x y z &keys {:a a :b b :c c}]
   (+ x y z a b c))
 
@@ -142,7 +144,7 @@
         "keyword args 2")
 
 #
-# fn compilation special
+# fn compilation special - b8032ec61
 #
 (defn myfn1 [[x y z] & more]
   more)
@@ -151,13 +153,13 @@
 (assert (= (myfn1 [1 2 3] 4 5 6) (myfn2 [:a :b :c] 4 5 6))
         "destructuring and varargs")
 
-# Nested quasiquotation
+# Nested quasiquotation - 4199c42fe
 
 (def nested ~(a ~(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f))
 (assert (deep= nested '(a ~(b ,(+ 1 2) ,(foo 4 d) e) f))
         "nested quasiquote")
 
-# Regression #400
+# Regression issue #400 - 7a84fc474
 (assert (= nil (while (and false false)
                  (fn [])
                  (error "should not happen"))) "strangeloop 1")
@@ -165,7 +167,7 @@
                  (fn [])
                  (error "should not happen"))) "strangeloop 2")
 
-# issue #919
+# issue #919 - a097537a0
 (defn test
   []
   (var x 1)
