@@ -172,7 +172,7 @@
 
 (assert (= 7 (case :a :b 5 :c 6 :u 10 7)) "case with default")
 
-# Testing the seq, catseq, and loop macros
+# Testing the seq, tabseq, catseq, and loop macros
 (def xs (apply tuple (seq [x :range [0 10] :when (even? x)]
                        (tuple (/ x 2) x))))
 (assert (= xs '((0 0) (1 2) (2 4) (3 6) (4 8))) "seq macro 1")
@@ -180,6 +180,12 @@
 (def xs (apply tuple (seq [x :down [8 -2] :when (even? x)]
                        (tuple (/ x 2) x))))
 (assert (= xs '((4 8) (3 6) (2 4) (1 2) (0 0))) "seq macro 2")
+
+(assert (deep= (tabseq [i :in (range 3)] i (* 3 i))
+               @{0 0 1 3 2 6}))
+
+(assert (deep= (tabseq [i :in (range 3)] i)
+               @{}))
 
 (def xs (catseq [x :range [0 3]] [x x]))
 (assert (deep= xs @[0 0 1 1 2 2]) "catseq")

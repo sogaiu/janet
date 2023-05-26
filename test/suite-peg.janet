@@ -581,5 +581,25 @@
 (assert (deep= (peg/match pattern text) (peg/match alt-pattern text))
         "to/thru bug #971")
 
+# 14657a7
+(def- sym-prefix-peg
+  (peg/compile
+    ~{:symchar (+ (range "\x80\xff" "AZ" "az" "09")
+                  (set "!$%&*+-./:<?=>@^_"))
+      :anchor (drop (cmt ($) ,|(= $ 0)))
+      :cap (* (+ (> -1 (not :symchar)) :anchor) (* ($) '(some :symchar)))
+      :recur (+ :cap (> -1 :recur))
+      :main (> -1 :recur)}))
+
+(assert (deep= (peg/match sym-prefix-peg @"123" 3) @[0 "123"])
+        "peg lookback")
+(assert (deep= (peg/match sym-prefix-peg @"1234" 4) @[0 "1234"])
+        "peg lookback 2")
+
+(assert (deep= (peg/replace-all '(* (<- 1) 1 (backmatch))
+                                "xxx" "aba cdc efa")
+               @"xxx xxx efa")
+        "peg replace-all 1")
+
 (end-suite)
 
