@@ -21,9 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-(assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
-
-# RNGs
+# RNGs - aee168721
 
 (defn test-rng
   [rng]
@@ -38,15 +36,17 @@
 (for i 0 75
   (test-rng (math/rng (:int seedrng))))
 
+# 70328437f
 (assert (deep-not= (-> 123 math/rng (:buffer 16))
                    (-> 456 math/rng (:buffer 16))) "math/rng-buffer 1")
 
 (assert-no-error "math/rng-buffer 2" (math/seedrandom "abcdefg"))
 
+# 06aa0a124
 (assert (= (math/gcd 462 1071) 21) "math/gcd 1")
 (assert (= (math/lcm 462 1071) 23562) "math/lcm 1")
 
-# math gamma
+# math gamma - e6babd8
 
 (assert (< 11899423.08 (math/gamma 11.5) 11899423.085) "math/gamma")
 (assert (< 2605.1158 (math/log-gamma 500) 2605.1159) "math/log-gamma")

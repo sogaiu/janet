@@ -510,6 +510,9 @@
 (def f (asm (disasm (fn [x] (fn [y] (+ x y))))))
 (assert (= ((f 10) 37) 47) "asm environment tables")
 
+# First commit removing the integer number type - 6b95326d7
+(assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
+
 # 88813c4
 (assert (deep= (in (disasm (defn a [] (def x 10) x)) :symbolmap)
                @[[0 3 0 'a] [1 3 1 'x]])
