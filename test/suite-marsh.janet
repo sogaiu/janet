@@ -23,9 +23,11 @@
 
 # Marshal
 
+# 98f2c6f
 (def um-lookup (env-lookup (fiber/getenv (fiber/current))))
 (def m-lookup (invert um-lookup))
 
+# 0cf10946b
 (defn testmarsh [x msg]
   (def marshx (marshal x m-lookup))
   (def out (marshal (unmarshal marshx um-lookup) m-lookup))
@@ -58,11 +60,12 @@
 (testmarsh (fiber/new (fn [] (yield 1) 2)) "marshal simple fiber 1")
 (testmarsh (fiber/new (fn [&] (yield 1) 2)) "marshal simple fiber 2")
 
+# issue #53 - 1147482e6
 (def strct {:a @[nil]})
 (put (strct :a) 0 strct)
 (testmarsh strct "cyclic struct")
 
-# More marshalling code
+# More marshalling code - issue #53 - 1147482e6
 
 (defn check-image
   "Run a marshaling test using the make-image and load-image functions."
@@ -77,6 +80,7 @@
 (check-image (fiber/new (fn [] (fiber/new (fn [] 1))))
              "marshal nested fibers")
 
+# issue #53 - f4908ebc4
 (def issue-53-x
   (fiber/new
     (fn []
@@ -84,31 +88,7 @@
 
 (check-image issue-53-x "issue 53 regression")
 
-# Marshal and unmarshal pegs
-(def p (-> "abcd" peg/compile marshal unmarshal))
-(assert (peg/match p "abcd") "peg marshal 1")
-(assert (peg/match p "abcdefg") "peg marshal 2")
-(assert (not (peg/match p "zabcdefg")) "peg marshal 3")
-
-# This should be valgrind clean.
-(var pegi 3)
-(defn marshpeg [p]
-  (assert (-> p peg/compile marshal unmarshal)
-          (string "peg marshal " (++ pegi))))
-(marshpeg '(* 1 2 (set "abcd") "asdasd" (+ "." 3)))
-(marshpeg '(% (* (+ 1 2 3) (* "drop" "bear") '"hi")))
-(marshpeg '(> 123 "abcd"))
-(marshpeg '{:main (* 1 "hello" :main)})
-(marshpeg '(range "AZ"))
-(marshpeg '(if-not "abcdf" 123))
-(marshpeg '(error ($)))
-(marshpeg '(* "abcd" (constant :hi)))
-(marshpeg ~(/ "abc" ,identity))
-(marshpeg '(if-not "abcdf" 123))
-(marshpeg ~(cmt "abcdf" ,identity))
-(marshpeg '(group "abc"))
-
-# Marshal closure over non resumable fiber - issue #317
+# Marshal closure over non resumable fiber - issue #317 - 7c4ffe9b9
 (do
   (defn f1
     [a]
@@ -120,7 +100,7 @@
   (assert (= 1 (f1)) "marshal-non-resumable-closure 1")
   (assert (= 2 (f2)) "marshal-non-resumable-closure 2"))
 
-# Marshal closure over currently alive fiber - issue #317
+# Marshal closure over currently alive fiber - issue #317 - 7c4ffe9b9
 (do
   (defn f1
     [a]
@@ -138,12 +118,14 @@
   (assert (= 2 (c 1)) "marshal-on-stack-closure 1"))
 
 # Issue #336 cases - don't segfault
-
+# b145d4786
 (assert-error "unmarshal errors 1" (unmarshal @"\xd6\xb9\xb9"))
 (assert-error "unmarshal errors 2" (unmarshal @"\xd7bc"))
+# 5bbd50785
 (assert-error "unmarshal errors 3"
               (unmarshal "\xd3\x01\xd9\x01\x62\xcf\x03\x78\x79\x7a"
                          load-image-dict))
+# fcc610f53
 (assert-error "unmarshal errors 4"
               (unmarshal
                 @"\xD7\xCD\0e/p\x98\0\0\x03\x01\x01\x01\x02\0\0\x04\0\xCEe/p../tools
@@ -151,7 +133,7 @@
 \xA8\xDE\xDE\xDE\xDE\xDE\xDE\0\0\0\xDE\xDE_unmarshal_testcase3.ja
 neldb\0\0\0\xD8\x05printG\x01\0\xDE\xDE\xDE'\x03\0marshal_tes/\x02
 \0\0\0\0\0*\xFE\x01\04\x02\0\0'\x03\0\r\0\r\0\r\0\r" load-image-dict))
-
+# XXX: still needed? see 72beeeea
 (gccollect)
 
 (end-suite)

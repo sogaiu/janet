@@ -362,7 +362,7 @@
                           (get ((fiber/getenv (fiber/current)) 'cond)
                                :doc ""))) "no \\r in doc strings")
 
-# Detaching closure over non resumable fiber - issue #317
+# Detaching closure over non resumable fiber - issue #317 - 7c4ffe9b9
 (do
   (defn f1
     [a]
@@ -474,6 +474,12 @@
 (assert (deep= x y) "struct proto deep= 1")
 (assert (deep-not= x z) "struct proto deep= 2")
 (assert (deep-not= y z) "struct proto deep= 3")
+
+# Marshal and unmarshal pegs - 446ab037b
+(def p (-> "abcd" peg/compile marshal unmarshal))
+(assert (peg/match p "abcd") "peg marshal 1")
+(assert (peg/match p "abcdefg") "peg marshal 2")
+(assert (not (peg/match p "zabcdefg")) "peg marshal 3")
 
 # missing symbols - issue #914
 
