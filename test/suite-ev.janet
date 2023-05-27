@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Subprocess - 5e1a8c86f
+# Subprocess
+# 5e1a8c86f
 
 (def janet (dyn :executable))
 
@@ -61,7 +62,8 @@
   (def retval (os/proc-wait p))
   (assert (not= retval 24) "Process was *not* terminated by parent"))
 
-# Parallel subprocesses - 5e1a8c86f
+# Parallel subprocesses
+# 5e1a8c86f
 
 (defn calc-1
   "Run subprocess, read from stdout, then wait on subprocess."
@@ -100,7 +102,8 @@
       (calc-2 "(+ 9 10 11 12)"))
     @[10 26 42]) "parallel subprocesses 2")
 
-# File piping - a1cc5ca04
+# File piping
+# a1cc5ca04
 
 (assert-no-error "file writing 1"
   (with [f (file/temp)]
@@ -111,7 +114,8 @@
     (os/execute [janet "-e" `(repeat 20 (print :hello))`] :p {:out f})
     (file/flush f)))
 
-# Issue #593 - a1cc5ca04
+# Issue #593
+# a1cc5ca04
 (assert-no-error "file writing 3"
   (def outfile (file/open "unique.txt" :w))
   (os/execute [janet "-e" "(pp (seq [i :range (1 10)] i))"] :p
@@ -120,7 +124,8 @@
   (file/close outfile)
   (os/rm "unique.txt"))
 
-# Ensure that the stream created by os/open works - e8a86013d
+# Ensure that the stream created by os/open works
+# e8a86013d
 
 (assert-no-error "File writing 4.1"
    (def outstream (os/open "unique.txt" :wct))
@@ -132,7 +137,8 @@
            "File writing 4.2")
    (os/rm "unique.txt"))
 
-# Test that the stream created by os/open can be read from - 8d8a6534e
+# Test that the stream created by os/open can be read from
+# 8d8a6534e
 (comment
   (assert-no-error "File reading 1.1"
     (def outstream (os/open "unique.txt" :wct))
@@ -146,13 +152,15 @@
               "File reading 1.2"))
     (os/rm "unique.txt")))
 
-# ev/gather - 4f2d1cdc0
+# ev/gather
+# 4f2d1cdc0
 
 (assert (deep= @[1 2 3] (ev/gather 1 2 3)) "ev/gather 1")
 (assert (deep= @[] (ev/gather)) "ev/gather 2")
 (assert-error "ev/gather 3" (ev/gather 1 2 (error 3)))
 
-# Net testing - 2904c19ed
+# Net testing
+# 2904c19ed
 
 (repeat 10
 
@@ -181,7 +189,8 @@
 
   (:close s))
 
-# Test on both server and client - 504411e
+# Test on both server and client
+# 504411e
 (defn names-handler
   [stream]
   (defer (:close stream)
@@ -191,7 +200,8 @@
     (assert (= host "127.0.0.1") "localname host server")
     (assert (= port 8000) "localname port server")))
 
-# Test localname and peername - 077bf5eba
+# Test localname and peername
+# 077bf5eba
 (repeat 10
   (with [s (net/server "127.0.0.1" "8000" names-handler)]
     (repeat 10
@@ -203,7 +213,8 @@
         (ev/write conn " "))))
   (gccollect))
 
-# Create pipe - 12f09ad2d
+# Create pipe
+# 12f09ad2d
 
 (var pipe-counter 0)
 (def chan (ev/chan 10))
@@ -233,7 +244,8 @@
 # f0dbc2e
 (assert (os/execute [janet "-e" `(+ 1 2 3)`] :xp) "os/execute self")
 
-# Test some channel - e76b8da26
+# Test some channel
+# e76b8da26
 
 (def c1 (ev/chan))
 (def c2 (ev/chan))
@@ -275,7 +287,8 @@
 (ev/rselect c2)
 (assert (= (slice arr) (slice (range 100))) "ev/chan-close 3")
 
-# threaded channels - 868cdb9
+# threaded channels
+# 868cdb9
 
 (def ch (ev/thread-chan 2))
 (def att (ev/thread-chan 109))
@@ -285,7 +298,8 @@
   (assert (ev/take ch)
           "channel packing bug for threaded abstracts on threaded channels."))
 
-# marshal channels - 76be8006a
+# marshal channels
+# 76be8006a
 
 (def ch (ev/chan 10))
 (ev/give ch "hello")
