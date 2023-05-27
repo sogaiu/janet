@@ -3122,3 +3122,25 @@ neldb\0\0\0\xD8\x05printG\x01\0\xDE\xDE\xDE'\x03\0marshal_tes/\x02
 
 (end-suite)
 
+(start-suite 13)
+
+(assert (deep= (tabseq [i :in (range 3)] i (* 3 i))
+               @{0 0 1 3 2 6}))
+
+(assert (deep= (tabseq [i :in (range 3)] i)
+               @{}))
+
+(def- sym-prefix-peg
+  (peg/compile
+    ~{:symchar (+ (range "\x80\xff" "AZ" "az" "09") (set "!$%&*+-./:<?=>@^_"))
+      :anchor (drop (cmt ($) ,|(= $ 0)))
+      :cap (* (+ (> -1 (not :symchar)) :anchor) (* ($) '(some :symchar)))
+      :recur (+ :cap (> -1 :recur))
+      :main (> -1 :recur)}))
+
+(assert (deep= (peg/match sym-prefix-peg @"123" 3) @[0 "123"]) "peg lookback")
+(assert (deep= (peg/match sym-prefix-peg @"1234" 4) @[0 "1234"]) "peg lookback 2")
+
+(assert (deep= (peg/replace-all '(* (<- 1) 1 (backmatch)) "xxx" "aba cdc efa") @"xxx xxx efa") "peg replace-all 1")
+
+(end-suite)
