@@ -65,7 +65,8 @@
 (put (strct :a) 0 strct)
 (testmarsh strct "cyclic struct")
 
-# More marshalling code - issue #53 - 1147482e6
+# More marshalling code
+# issue #53 - 1147482e6
 
 (defn check-image
   "Run a marshaling test using the make-image and load-image functions."
@@ -88,7 +89,8 @@
 
 (check-image issue-53-x "issue 53 regression")
 
-# Marshal closure over non resumable fiber - issue #317 - 7c4ffe9b9
+# Marshal closure over non resumable fiber
+# issue #317 - 7c4ffe9b9
 (do
   (defn f1
     [a]
@@ -100,7 +102,8 @@
   (assert (= 1 (f1)) "marshal-non-resumable-closure 1")
   (assert (= 2 (f2)) "marshal-non-resumable-closure 2"))
 
-# Marshal closure over currently alive fiber - issue #317 - 7c4ffe9b9
+# Marshal closure over currently alive fiber
+# issue #317 - 7c4ffe9b9
 (do
   (defn f1
     [a]
