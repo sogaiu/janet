@@ -21,11 +21,14 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# ac50f62
 (assert (= 10 (+ 1 2 3 4)) "addition")
 (assert (= -8 (- 1 2 3 4)) "subtraction")
 (assert (= 24 (* 1 2 3 4)) "multiplication")
+# d6967a5
 (assert (= 4 (blshift 1 2)) "left shift")
 (assert (= 1 (brshift 4 2)) "right shift")
+# 7e46ead
 (assert (< 1 2 3 4 5 6) "less than integers")
 (assert (< 1.0 2.0 3.0 4.0 5.0 6.0) "less than reals")
 (assert (> 6 5 4 3 2 1) "greater than integers")
@@ -50,7 +53,9 @@
            (fn [x] (+ x x))
            print) "type ordering")
 
+# b305a7c9b
 (assert (= (string (buffer "123" "456")) (string @"123456")) "buffer literal")
+# 277117165
 (assert (= (get {} 1) nil) "get nil from empty struct")
 (assert (= (get @{} 1) nil) "get nil from empty table")
 (assert (= (get {:boop :bap} :boop) :bap) "get non nil from struct")
@@ -59,17 +64,18 @@
 (assert (= (get @"\0" 1) nil) "get nil from buffer oob")
 (assert (put @{} :boop :bap) "can add to empty table")
 (assert (put @{1 3} :boop :bap) "can add to non-empty table")
-
+# 7e46ead
 (assert (= 7 (bor 3 4)) "bit or")
 (assert (= 0 (band 3 4)) "bit and")
+# f41dab8
 (assert (= 0xFF (bxor 0x0F 0xF0)) "bit xor")
 (assert (= 0xF0 (bxor 0xFF 0x0F)) "bit xor 2")
 
-# Some testing for not=
+# Some testing for not= - 08f6c642d
 (assert (not= 1 1 0) "not= 1")
 (assert (not= 0 1 1) "not= 2")
 
-# Check if abstract test works
+# Check if abstract test works - d791077e2
 (assert (abstract? stdout) "abstract? stdout")
 (assert (abstract? stdin) "abstract? stdin")
 (assert (abstract? stderr) "abstract? stderr")
@@ -78,7 +84,7 @@
 (assert (not (abstract? 3)) "not abstract? 3")
 (assert (not (abstract? 5)) "not abstract? 5")
 
-# Module path expansion
+# Module path expansion - ff3bb6627
 (setdyn :current-file "some-dir/some-file")
 (defn test-expand [path temp]
   (string (module/expand-path path temp)))
@@ -91,6 +97,7 @@
         "module/expand-path 3")
 (assert (= (test-expand "abc/def.txt" ":cur:/:dir:/sub/:name:")
            "some-dir/abc/sub/def.txt") "module/expand-path 4")
+# fc46030e7
 (assert (= (test-expand "/abc/../def.txt" ":all:") "/def.txt")
         "module/expand-path 5")
 (assert (= (test-expand "abc/../def.txt" ":all:") "def.txt")
@@ -100,7 +107,7 @@
 (assert (= (test-expand "../././././abcd/../def.txt" ":all:") "../def.txt")
         "module/expand-path 8")
 
-# module/expand-path regression
+# module/expand-path regression - issue #143 - e0fe8476a
 (with-dyns [:syspath ".janet/.janet"]
   (assert (= (string (module/expand-path "hello" ":sys:/:all:.janet"))
              ".janet/.janet/hello.janet") "module/expand-path 1"))
