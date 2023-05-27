@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# some tests for bigint
+# some tests for bigint - 319575c
 
 (def i64 int/s64)
 (def u64 int/u64)
@@ -39,7 +39,7 @@
    (def c (u64 "32rvv_vv_vv_vv"))
    (def d (u64 "123456789"))))
 
-# Conversion back to an int32
+# Conversion back to an int32 - 88db9751d
 (assert (= (int/to-number (u64 0xFaFa)) 0xFaFa))
 (assert (= (int/to-number (i64 0xFaFa)) 0xFaFa))
 (assert (= (int/to-number (u64 9007199254740991)) 9007199254740991))
@@ -86,14 +86,16 @@
 (assert (let [a (u64 0xff)] (= (:+ a a a a) (:* a 2 2)))
         "bigint operations 2")
 
+# 5ae520a2c
 (assert (= (string (i64 -123)) "-123") "i64 prints reasonably")
 (assert (= (string (u64 123)) "123") "u64 prints reasonably")
 
+# 1db6d0e0b
 (assert-error
  "trap INT64_MIN / -1"
  (:/ (int/s64 "-0x8000_0000_0000_0000") -1))
 
-# int/s64 and int/u64 serialization
+# int/s64 and int/u64 serialization - 6aea7c7f7
 (assert (deep= (int/to-bytes (u64 0)) @"\x00\x00\x00\x00\x00\x00\x00\x00"))
 
 (assert (deep= (int/to-bytes (i64 1) :le)
@@ -112,7 +114,7 @@
 (assert (deep= (int/to-bytes (u64 300) :be)
                @"\x00\x00\x00\x00\x00\x00\x01\x2C"))
 
-# int/s64 int/u64 to existing buffer
+# int/s64 int/u64 to existing buffer - bbb3e16fd
 (let [buf1 @""
       buf2 @"abcd"]
   (assert (deep= (int/to-bytes (i64 1) :le buf1)
@@ -122,19 +124,22 @@
                  @"abcd\x00\x00\x00\x00\x00\x00\x01\x2C")))
 
 # int/s64 and int/u64 paramater type checking
+# 6aea7c7f7
 (assert-error
  "bad value passed to int/to-bytes"
  (int/to-bytes 1))
 
+# 6aea7c7f7
 (assert-error
   "invalid endianness passed to int/to-bytes"
    (int/to-bytes (u64 0) :little))
 
+# bbb3e16fd
 (assert-error
   "invalid buffer passed to int/to-bytes"
    (int/to-bytes (u64 0) :little :buffer))
 
-# Right hand operators
+# Right hand operators - 4fe005e3c
 (assert (= (int/s64 (sum (range 10))) (sum (map int/s64 (range 10))))
         "right hand operators 1")
 (assert (= (int/s64
@@ -143,7 +148,7 @@
 (assert (= (int/s64 15) (bor 10 (int/s64 5)) (bor (int/s64 10) 5))
         "right hand operators 3")
 
-# Integer type checks
+# Integer type checks - 11067d7a5
 (assert (compare= 0 (- (int/u64 "1000") 1000)) "subtract from int/u64")
 
 (assert (odd? (int/u64 "1001")) "odd? 1")
@@ -178,7 +183,7 @@
 (modcheck -10 3)
 (modcheck -10 -3)
 
-# Check for issue #1130
+# Check for issue #1130 - 7e65c2bda
 (var d (int/s64 7))
 (mod 0 d)
 
