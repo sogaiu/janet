@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Buffer blitting - 16ebb1118
+# Buffer blitting
+# 16ebb1118
 
 (def b (buffer/new-filled 100))
 (buffer/bit-set b 100)
@@ -41,7 +42,8 @@
 (buffer/blit b2 "abcdefg" 5 6)
 (assert (= (string b2) "joytogjoyto") "buffer/blit 3")
 
-# Buffer push word - e755f9830
+# Buffer push word
+# e755f9830
 
 (def b3 @"")
 (buffer/push-word b3 0xFF 0x11)
@@ -52,7 +54,8 @@
 (assert (= 8 (length b3)) "buffer/push-word 3")
 (assert (= "\xFF\xFF\xFF\xFF\0\x11\0\0" (string b3)) "buffer/push-word 4")
 
-# Buffer push string - 175925207
+# Buffer push string
+# 175925207
 
 (def b4 (buffer/new-filled 10 0))
 (buffer/push-string b4 b4)
@@ -62,7 +65,8 @@
 (buffer/push-string b5 "456" @"789")
 (assert (= "123456789" (string b5)) "buffer/push-buffer 2")
 
-# Regression #301 - a3d4ecddb
+# Regression #301
+# a3d4ecddb
 (def b (buffer/new-filled 128 0x78))
 (assert (= 38 (length (buffer/blit @"" b -1 90))) "buffer/blit 1")
 
@@ -72,7 +76,8 @@
 (assert (deep= @"cde" (buffer/blit @"" a -1 2 5)) "buffer/blit 4")
 (assert (deep= @"de" (buffer/blit @"" a -1 3 5)) "buffer/blit 5")
 
-# buffer/push-at - c55d93512
+# buffer/push-at
+# c55d93512
 (assert (deep= @"abc456" (buffer/push-at @"abc123" 3 "456"))
         "buffer/push-at 1")
 (assert (deep= @"abc456789" (buffer/push-at @"abc123" 3 "456789"))
