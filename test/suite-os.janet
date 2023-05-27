@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# OS Date test - 719f7ba0c
+# OS Date test
+# 719f7ba0c
 
 (assert (deep= {:year-day 0
                 :minutes 30
@@ -34,7 +35,8 @@
                 :week-day 3}
                (os/date 1388608200)) "os/date")
 
-# OS mktime test - 3ee43c3ab
+# OS mktime test
+# 3ee43c3ab
 
 (assert (= 1388608200 (os/mktime {:year-day 0
                                   :minutes 30
@@ -51,7 +53,8 @@
 (assert (= (os/mktime (os/date now true) true) now) "local os/mktime")
 (assert (= (os/mktime {:year 1970}) 0) "os/mktime default values")
 
-# OS strftime test - 5cd729c4c
+# OS strftime test
+# 5cd729c4c
 
 (assert (= (os/strftime "%Y-%m-%d %H:%M:%S" 0) "1970-01-01 00:00:00")
         "strftime UTC epoch")
@@ -70,7 +73,8 @@
 (assert (= [(environ "TESTENV1") (environ "TESTENV2")] ["v1" "v2"])
         "environ works")
 
-# Ensure randomness puts n of pred into our buffer eventually - 0ac5b243c
+# Ensure randomness puts n of pred into our buffer eventually
+# 0ac5b243c
 (defn cryptorand-check
   [n pred]
   (def max-attempts 10000)
@@ -92,7 +96,8 @@
   (assert (= (in buf 0) 0) "cryptorand doesn't overwrite buffer")
   (assert (= (length buf) 2) "cryptorand appends to buffer"))
 
-# os/clock - 80db68210
+# os/clock
+# 80db68210
 
 # These tests might prove fragile under CI because they rely on measured
 # time. We'll see.
@@ -117,7 +122,8 @@
 (assert (> (dt :monotonic) 0.10))
 (assert (< (dt :cputime) 0.05))
 
-# Perm strings - a0d61e45d
+# Perm strings
+# a0d61e45d
 
 (assert (= (os/perm-int "rwxrwxrwx") 8r777) "perm 1")
 (assert (= (os/perm-int "rwxr-xr-x") 8r755) "perm 2")
@@ -131,12 +137,14 @@
 (assert (= (os/perm-string 8r755) "rwxr-xr-x") "perm 8")
 (assert (= (os/perm-string 8r644) "rw-r--r--") "perm 9")
 
-# os/execute with environment variables - issue #636 - 7e2c433ab
+# os/execute with environment variables
+# issue #636 - 7e2c433ab
 (assert (= 0 (os/execute [(dyn :executable) "-e" "(+ 1 2 3)"] :pe
                          (merge (os/environ) {"HELLO" "WORLD"})))
         "os/execute with env")
 
-# os/execute regressions - 427f7c362
+# os/execute regressions
+# 427f7c362
 (for i 0 10
   (assert (= i (os/execute [(dyn :executable) "-e"
                             (string/format "(os/exit %d)" i)] :p))
