@@ -23,7 +23,8 @@
 
 (def has-ffi (dyn 'ffi/native))
 
-# FFI check - d80356158
+# FFI check
+# d80356158
 (compwhen has-ffi
   (ffi/context))
 
