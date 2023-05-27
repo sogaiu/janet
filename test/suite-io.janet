@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Printing to buffers
+# Printing to buffers - d47804d22
 (def out-buf @"")
 (def err-buf @"")
 (with-dyns [:out out-buf :err err-buf]
@@ -34,7 +34,7 @@
 (assert (= (string err-buf) "Sup\nnot much.")
         "eprint and eprin to buffer 1")
 
-# Printing to functions
+# Printing to functions - 4e263b8c3
 (def out-buf @"")
 (defn prepend [x]
   (with-dyns [:out out-buf]
@@ -45,14 +45,7 @@
 (assert (= (string out-buf) "> Hello world\n")
         "print to buffer via function")
 
-# Appending buffer to self
-
-(with-dyns [:out @""]
-  (prin "abcd")
-  (prin (dyn :out))
-  (prin (dyn :out))
-  (assert (deep= (dyn :out) @"abcdabcdabcdabcd") "print buffer to self"))
-
+# c2f844157, 3c523d66e
 (with [f (file/temp)]
   (assert (= 0 (file/tell f)) "start of file")
   (file/write f "foo\n")
@@ -62,7 +55,7 @@
   (assert (= 0 (file/tell f)) "start of file again")
   (assert (= (string (file/read f :all)) "foo\n") "temp files work"))
 
-# issue #1055
+# issue #1055 - 2c927ea76
 (let [b @""]
   (defn dummy [a b c]
     (+ a b c))
