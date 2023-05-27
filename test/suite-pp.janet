@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Appending buffer to self - 6b76ac3d1
+# Appending buffer to self
+# 6b76ac3d1
 
 (with-dyns [:out @""]
   (prin "abcd")
@@ -29,7 +30,8 @@
   (prin (dyn :out))
   (assert (deep= (dyn :out) @"abcdabcdabcdabcd") "print buffer to self"))
 
-# Buffer self blitting, check for use after free - bbcfaf128
+# Buffer self blitting, check for use after free
+# bbcfaf128
 (def buf1 @"1234567890")
 (buffer/blit buf1 buf1 -1)
 (buffer/blit buf1 buf1 -1)
@@ -38,7 +40,8 @@
 (assert (= (string buf1) (string/repeat "1234567890" 16))
         "buffer blit against self")
 
-# Check for bugs with printing self with buffer/format - bbcfaf128
+# Check for bugs with printing self with buffer/format
+# bbcfaf128
 
 (def buftemp @"abcd")
 (assert (= (string (buffer/format buftemp "---%p---" buftemp))
