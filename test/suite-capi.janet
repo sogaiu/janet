@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Dynamic bindings - 7918add47, 513d551d
+# Dynamic bindings
+# 7918add47, 513d551d
 (setdyn :a 10)
 (assert (= 40 (with-dyns [:a 25 :b 15] (+ (dyn :a) (dyn :b)))) "dyn usage 1")
 (assert (= 10 (dyn :a)) "dyn usage 2")
