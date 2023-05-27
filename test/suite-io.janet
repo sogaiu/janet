@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Printing to buffers - d47804d22
+# Printing to buffers
+# d47804d22
 (def out-buf @"")
 (def err-buf @"")
 (with-dyns [:out out-buf :err err-buf]
@@ -34,7 +35,8 @@
 (assert (= (string err-buf) "Sup\nnot much.")
         "eprint and eprin to buffer 1")
 
-# Printing to functions - 4e263b8c3
+# Printing to functions
+# 4e263b8c3
 (def out-buf @"")
 (defn prepend [x]
   (with-dyns [:out out-buf]
