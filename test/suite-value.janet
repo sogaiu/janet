@@ -29,7 +29,8 @@
 (assert (= (get test-struct 'a) 'b) "struct get")
 (assert (= :array (type (get test-struct 'het))) "struct get")
 
-# Buffer stuff - 910cfd7dd
+# Buffer stuff
+# 910cfd7dd
 (defn buffer=
   [a b]
   (= (string a) (string b)))
@@ -47,7 +48,8 @@
 
 (assert (= (length @"abcdef") 6) "buffer length")
 
-# Tuple comparison - da438a93e
+# Tuple comparison
+# da438a93e
 (assert (< [1 2 3] [2 2 3]) "tuple comparison 1")
 (assert (< [1 2 3] [2 2]) "tuple comparison 2")
 (assert (< [1 2 3] [2 2 3 4]) "tuple comparison 3")
