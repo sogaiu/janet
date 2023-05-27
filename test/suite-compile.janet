@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Regression Test
+# Regression Test - 0378ba78c
 (assert (= 1 (((compile '(fn [] 1) @{})))) "regression test")
 
 # Fix a compiler bug in the do special form - 3e1e258
@@ -35,19 +35,20 @@
 (assert (= (myfun true) 8) "check do form regression")
 (assert (= (myfun false) 9) "check do form regression")
 
-# Check x:digits: works as symbol and not a hex number
+# Check x:digits: works as symbol and not a hex number - 5baf70f4c
 (def x1 100)
 (assert (= x1 100) "x1 as symbol")
 (def X1 100)
 (assert (= X1 100) "X1 as symbol")
 
 # Edge case should cause old compilers to fail due to
-# if statement optimization
+# if statement optimization - 17283241a
 (var var-a 1)
 (var var-b (if false 2 (string "hello")))
 
 (assert (= var-b "hello") "regression 1")
 
+# d28925fda
 (assert (= (string '()) (string [])) "empty bracket tuple literal")
 
 (end-suite)
