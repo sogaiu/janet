@@ -23,7 +23,6 @@
 
 # RNGs
 # aee168721
-
 (defn test-rng
   [rng]
   (assert (all identity (seq [i :range [0 1000]]
@@ -49,7 +48,6 @@
 
 # math gamma
 # e6babd8
-
 (assert (< 11899423.08 (math/gamma 11.5) 11899423.085) "math/gamma")
 (assert (< 2605.1158 (math/log-gamma 500) 2605.1159) "math/log-gamma")
 

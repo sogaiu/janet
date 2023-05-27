@@ -107,7 +107,6 @@
 
 # some tests for string/format
 # 0f0c415
-
 (assert (= (string/format "pi = %6.3f" math/pi) "pi =  3.142") "%6.3f")
 (assert (= (string/format "pi = %+6.3f" math/pi) "pi = +3.142") "%6.3f")
 (assert (= (string/format "pi = %40.20g" math/pi)

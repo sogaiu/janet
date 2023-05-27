@@ -23,7 +23,6 @@
 
 # Denormal tables
 # 38a7e4faf
-
 (assert (= (length @{1 2 nil 3}) 1) "nil key table literal")
 (assert (= (length (table 1 2 nil 3)) 1) "nil key table ctor")
 
@@ -40,7 +39,6 @@
 
 ## Table prototypes
 # 027b2a81c
-
 (def roottab @{
  :parentprop 123
 })
@@ -58,7 +56,6 @@
 
 # table/clone
 # 392813667
-
 (defn check-table-clone [x msg]
   (assert (= (table/to-struct x) (table/to-struct (table/clone x))) msg))
 

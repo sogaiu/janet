@@ -23,7 +23,6 @@
 
 # Subprocess
 # 5e1a8c86f
-
 (def janet (dyn :executable))
 
 (repeat 10
@@ -64,7 +63,6 @@
 
 # Parallel subprocesses
 # 5e1a8c86f
-
 (defn calc-1
   "Run subprocess, read from stdout, then wait on subprocess."
   [code]
@@ -104,7 +102,6 @@
 
 # File piping
 # a1cc5ca04
-
 (assert-no-error "file writing 1"
   (with [f (file/temp)]
     (os/execute [janet "-e" `(repeat 20 (print :hello))`] :p {:out f})))
@@ -126,7 +123,6 @@
 
 # Ensure that the stream created by os/open works
 # e8a86013d
-
 (assert-no-error "File writing 4.1"
    (def outstream (os/open "unique.txt" :wct))
    (defer (:close outstream)
@@ -154,14 +150,12 @@
 
 # ev/gather
 # 4f2d1cdc0
-
 (assert (deep= @[1 2 3] (ev/gather 1 2 3)) "ev/gather 1")
 (assert (deep= @[] (ev/gather)) "ev/gather 2")
 (assert-error "ev/gather 3" (ev/gather 1 2 (error 3)))
 
 # Net testing
 # 2904c19ed
-
 (repeat 10
 
   (defn handler
@@ -215,7 +209,6 @@
 
 # Create pipe
 # 12f09ad2d
-
 (var pipe-counter 0)
 (def chan (ev/chan 10))
 (let [[reader writer] (os/pipe)]
@@ -246,7 +239,6 @@
 
 # Test some channel
 # e76b8da26
-
 (def c1 (ev/chan))
 (def c2 (ev/chan))
 (def arr @[])
@@ -289,7 +281,6 @@
 
 # threaded channels
 # 868cdb9
-
 (def ch (ev/thread-chan 2))
 (def att (ev/thread-chan 109))
 (assert att "`att` was nil after creation")
@@ -300,7 +291,6 @@
 
 # marshal channels
 # 76be8006a
-
 (def ch (ev/chan 10))
 (ev/give ch "hello")
 (ev/give ch "world")

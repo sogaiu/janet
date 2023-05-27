@@ -23,7 +23,6 @@
 
 # Scan number
 # 798c88b4c
-
 (assert (= 1 (scan-number "1")) "scan-number 1")
 (assert (= -1 (scan-number "-1")) "scan-number -1")
 (assert (= 1.3e4 (scan-number "1.3e4")) "scan-number 1.3e4")

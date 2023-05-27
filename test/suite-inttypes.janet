@@ -23,7 +23,6 @@
 
 # some tests for bigint
 # 319575c
-
 (def i64 int/s64)
 (def u64 int/u64)
 

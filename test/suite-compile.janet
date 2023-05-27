@@ -27,7 +27,6 @@
 
 # Fix a compiler bug in the do special form
 # 3e1e2585
-
 (defn myfun [x]
   (var a 10)
   (set a (do

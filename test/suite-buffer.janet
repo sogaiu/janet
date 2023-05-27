@@ -23,7 +23,6 @@
 
 # Buffer blitting
 # 16ebb1118
-
 (def b (buffer/new-filled 100))
 (buffer/bit-set b 100)
 (buffer/bit-clear b 100)
@@ -44,7 +43,6 @@
 
 # Buffer push word
 # e755f9830
-
 (def b3 @"")
 (buffer/push-word b3 0xFF 0x11)
 (assert (= 8 (length b3)) "buffer/push-word 1")
@@ -56,7 +54,6 @@
 
 # Buffer push string
 # 175925207
-
 (def b4 (buffer/new-filled 10 0))
 (buffer/push-string b4 b4)
 (assert (= "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" (string b4))

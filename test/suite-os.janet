@@ -23,7 +23,6 @@
 
 # OS Date test
 # 719f7ba0c
-
 (assert (deep= {:year-day 0
                 :minutes 30
                 :month 0
@@ -37,7 +36,6 @@
 
 # OS mktime test
 # 3ee43c3ab
-
 (assert (= 1388608200 (os/mktime {:year-day 0
                                   :minutes 30
                                   :month 0
@@ -55,7 +53,6 @@
 
 # OS strftime test
 # 5cd729c4c
-
 (assert (= (os/strftime "%Y-%m-%d %H:%M:%S" 0) "1970-01-01 00:00:00")
         "strftime UTC epoch")
 (assert (= (os/strftime "%Y-%m-%d %H:%M:%S" 1388608200)
@@ -98,10 +95,8 @@
 
 # os/clock
 # 80db68210
-
 # These tests might prove fragile under CI because they rely on measured
 # time. We'll see.
-
 (defmacro measure-time [clocks & body]
   (def [t1 t2] [(gensym) (gensym)])
   ~(do
@@ -124,7 +119,6 @@
 
 # Perm strings
 # a0d61e45d
-
 (assert (= (os/perm-int "rwxrwxrwx") 8r777) "perm 1")
 (assert (= (os/perm-int "rwxr-xr-x") 8r755) "perm 2")
 (assert (= (os/perm-int "rw-r--r--") 8r644) "perm 3")

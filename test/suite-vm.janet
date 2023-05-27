@@ -23,7 +23,6 @@
 
 # More fiber semantics
 # 0fd9224e4
-
 (var myvar 0)
 (defn fiberstuff [&]
   (++ myvar)
@@ -54,7 +53,6 @@
 
 # Calling non functions
 # b9c0fc820
-
 (assert (= 1 ({:ok 1} :ok)) "calling struct")
 (assert (= 2 (@{:ok 2} :ok)) "calling table")
 (assert (= :bad (try ((identity @{:ok 2}) :ok :no) ([err] :bad)))
@@ -66,7 +64,6 @@
 
 # Method test
 # d5bab7262
-
 (def Dog @{:bark (fn bark [self what]
                    (string (self :name) " says " what "!"))})
 (defn make-dog
@@ -79,7 +76,6 @@
 
 # Negative tests
 # 67f26b7d7
-
 (assert-error "+ check types" (+ 1 ()))
 (assert-error "- check types" (- 1 ()))
 (assert-error "* check types" (* 1 ()))

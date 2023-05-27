@@ -38,14 +38,12 @@
 
 # Just numbers
 # 83f4a11bf
-
 (check-match '(* 4 -1) "abcd" true)
 (check-match '(* 4 -1) "abc" false)
 (check-match '(* 4 -1) "abcde" false)
 
 # Simple pattern
 # 83f4a11bf
-
 (check-match '(* (some (range "az" "AZ")) -1) "hello" true)
 (check-match '(* (some (range "az" "AZ")) -1) "hello world" false)
 (check-match '(* (some (range "az" "AZ")) -1) "1he11o" false)
@@ -53,14 +51,12 @@
 
 # Pre compile
 # ff0d3a008
-
 (def pegleg (peg/compile '{:item "abc" :main (* :item "," :item -1)}))
 
 (peg/match pegleg "abc,abc")
 
 # Bad Grammars
 # 192705113
-
 (assert-error "peg/compile error 1" (peg/compile nil))
 (assert-error "peg/compile error 2" (peg/compile @{}))
 (assert-error "peg/compile error 3" (peg/compile '{:a "abc" :b "def"}))
@@ -69,7 +65,6 @@
 
 # IP address
 # 40845b5c1
-
 (def ip-address
   '{:d (range "09")
     :0-4 (range "04")
@@ -89,7 +84,6 @@
 
 # Substitution test with peg
 # d7626f8c5
-
 (def grammar '(accumulate (any (+ (/ "dog" "purple panda") (<- 1)))))
 (defn try-grammar [text]
   (assert (= (string/replace-all "dog" "purple panda" text)
@@ -105,7 +99,6 @@
 
 # Peg CSV test
 # 798c88b4c
-
 (def csv
   '{:field (+
             (* `"` (% (any (+ (<- (if-not `"` 1))
@@ -123,14 +116,12 @@
 
 # Nested Captures
 # 798c88b4c
-
 (def grmr '(capture (* (capture "a") (capture 1) (capture "c"))))
 (check-deep grmr "abc" @["a" "b" "c" "abc"])
 (check-deep grmr "acc" @["a" "c" "c" "acc"])
 
 # Functions in grammar
 # 798c88b4c
-
 (def grmr-triple ~(% (any (/ (<- 1) ,(fn [x] (string x x x))))))
 (check-deep grmr-triple "abc" @["aaabbbccc"])
 (check-deep grmr-triple "" @[""])
@@ -141,12 +132,10 @@
 
 # Capture Backtracking
 # ff0d3a008
-
 (check-deep '(+ (* (capture "c") "d") "ce") "ce" @[])
 
 # Matchtime capture
 # 192705113
-
 (def scanner (peg/compile ~(cmt (capture (some 1)) ,scan-number)))
 
 (check-deep scanner "123" @[123])
@@ -156,7 +145,6 @@
 
 # Recursive grammars
 # 170e785b7
-
 (def g '{:main (+ (* "a" :main "b") "c")})
 
 (check-match g "c" true)
@@ -166,7 +154,6 @@
 
 # Back reference
 # d0ec89c7c
-
 (def wrapped-string
   ~{:pad (any "=")
     :open (* "[" (<- :pad :n) "[")
@@ -201,7 +188,6 @@
 
 # Line and column capture
 # 776ce586b
-
 (def line-col (peg/compile '(any (* (line) (column) 1))))
 (check-deep line-col "abcd" @[1 1 1 2 1 3 1 4])
 (check-deep line-col "" @[])
@@ -210,7 +196,6 @@
 
 # Backmatch
 # 711fe64a5
-
 (def backmatcher-1 '(* (capture (any "x") :1) "y" (backmatch :1) -1))
 
 (check-match backmatcher-1 "y" true)
@@ -247,7 +232,6 @@
 
 # Optional
 # 4eeadd746
-
 (check-match '(* (opt "hi") -1) "" true)
 (check-match '(* (opt "hi") -1) "hi" true)
 (check-match '(* (opt "hi") -1) "no" false)
@@ -257,13 +241,11 @@
 
 # Drop
 # b4934cedd
-
 (check-deep '(drop '"hello") "hello" @[])
 (check-deep '(drop "hello") "hello" @[])
 
 # Add bytecode verification for peg unmarshaling
 # e88a9af2f
-
 # This should be valgrind clean.
 (var pegi 3)
 (defn marshpeg [p]
@@ -312,7 +294,6 @@
 
 # Integer parsing
 # 45feb5548
-
 (check-deep '(int 1) "a" @[(chr "a")])
 (check-deep '(uint 1) "a" @[(chr "a")])
 (check-deep '(int-be 1) "a" @[(chr "a")])
@@ -360,7 +341,6 @@
 
 # Using a large test grammar
 # cf05ff610
-
 (def- specials {'fn true
                'var true
                'do true
@@ -431,7 +411,6 @@
 ### Compiling brainfuck to Janet.
 ###
 # 20d5d560f
-
 (def- bf-peg
   "Peg for compiling brainfuck into a Janet source ast."
   (peg/compile
@@ -484,14 +463,12 @@
 
 # Regression test
 # issue #300 - 714bd61d5
-
 # Just don't segfault
 (assert (peg/match '{:main (replace "S" {"S" :spade})} "S7")
         "regression #300")
 
 # Lenprefix rule
 # 8b5bcaee3
-
 (def peg (peg/compile ~(* (lenprefix (/ (* '(any (if-not ":" 1)) ":")
                                         ,scan-number) 1) -1)))
 
@@ -501,7 +478,6 @@
 
 # Packet capture
 # 8b5bcaee3
-
 (def peg2
   (peg/compile
     ~{# capture packet length in tag :header-len

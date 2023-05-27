@@ -23,7 +23,6 @@
 
 # Let
 # 807f981
-
 (assert (= (let [a 1 b 2] (+ a b)) 3) "simple let")
 (assert (= (let [[a b] @[1 2]] (+ a b)) 3) "destructured let")
 (assert (= (let [[a [c d] b] @[1 (tuple 4 3) 2]] (+ a b c d)) 10)
@@ -31,7 +30,6 @@
 
 # Macros
 # b305a7c
-
 (defn dub [x] (+ x x))
 (assert (= 2 (dub 1)) "defn macro")
 (do
@@ -152,7 +150,6 @@
 
 # Some higher order functions and macros
 # 5e2de33
-
 (def my-array @[1 2 3 4 5 6])
 (def x (if-let [x (get my-array 5)] x))
 (assert (= x 6) "if-let")
@@ -236,7 +233,6 @@
 
 # Even and odd
 # ff163a5ae
-
 (assert (odd? 9) "odd? 1")
 (assert (odd? -9) "odd? 2")
 (assert (not (odd? 10)) "odd? 3")
@@ -287,7 +283,6 @@
 
 # And and or
 # c16a9d846
-
 (assert (= (and true true) true) "and true true")
 (assert (= (and true false) false) "and true false")
 (assert (= (and false true) false) "and false true")
@@ -311,7 +306,6 @@
 
 # And/or checks
 # 6123c41f1
-
 (assert (= false (and false false)) "and 1")
 (assert (= false (or false false)) "or 1")
 
@@ -382,7 +376,6 @@
 
 # quoted match test
 # 425a0fcf0
-
 (assert (= :yes (match 'john 'john :yes _ :nope)) "quoted literal match 1")
 (assert (= :nope (match 'john ''john :yes _ :nope)) "quoted literal match 2")
 
@@ -397,7 +390,6 @@
 
 # take
 # 18da183ef
-
 (assert (deep= (take 0 []) []) "take 1")
 (assert (deep= (take 10 []) []) "take 2")
 (assert (deep= (take 0 [1 2 3 4 5]) []) "take 3")
@@ -414,7 +406,6 @@
 
 # take-until
 # 18da183ef
-
 (assert (deep= (take-until pos? @[]) []) "take-until 1")
 (assert (deep= (take-until pos? @[1 2 3]) []) "take-until 2")
 (assert (deep= (take-until pos? @[-1 -2 -3]) [-1 -2 -3]) "take-until 3")
@@ -426,7 +417,6 @@
 
 # take-while
 # 18da183ef
-
 (assert (deep= (take-while neg? @[]) []) "take-while 1")
 (assert (deep= (take-while neg? @[1 2 3]) []) "take-while 2")
 (assert (deep= (take-while neg? @[-1 -2 -3]) [-1 -2 -3]) "take-while 3")
@@ -437,7 +427,6 @@
 
 # drop
 # 18da183ef
-
 (assert (deep= (drop 0 []) []) "drop 1")
 (assert (deep= (drop 10 []) []) "drop 2")
 (assert (deep= (drop 0 [1 2 3 4 5]) [1 2 3 4 5]) "drop 3")
@@ -452,7 +441,6 @@
 
 # drop-until
 # 75dc08f
-
 (assert (deep= (drop-until pos? @[]) []) "drop-until 1")
 (assert (deep= (drop-until pos? @[1 2 3]) [1 2 3]) "drop-until 2")
 (assert (deep= (drop-until pos? @[-1 -2 -3]) []) "drop-until 3")
@@ -546,7 +534,6 @@
 
 # Prompts and Labels
 # 59d288c
-
 (assert (= 10 (label a (for i 0 10 (if (= i 5) (return a 10))))) "label 1")
 
 (defn recur
@@ -581,7 +568,6 @@
 
 # Reduce2
 # 3eb0927a2
-
 (assert (= (reduce + 0 (range 1 10)) (reduce2 + (range 10))) "reduce2 1")
 # 65379741f
 (assert (= (reduce * 1 (range 2 10)) (reduce2 * (range 1 10))) "reduce2 2")
@@ -589,7 +575,6 @@
 
 # Accumulate
 # 3eb0927a2
-
 (assert (deep= (accumulate + 0 (range 5)) @[0 1 3 6 10]) "accumulate 1")
 (assert (deep= (accumulate2 + (range 5)) @[0 1 3 6 10]) "accumulate2 1")
 # 65379741f

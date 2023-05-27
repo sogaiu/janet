@@ -67,7 +67,6 @@
 
 # More marshalling code
 # issue #53 - 1147482e6
-
 (defn check-image
   "Run a marshaling test using the make-image and load-image functions."
   [x msg]

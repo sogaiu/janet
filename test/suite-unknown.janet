@@ -109,12 +109,10 @@
 
 # Symbol function
 # 5460ff1
-
 (assert (= (symbol "abc" 1 2 3) 'abc123) "symbol function")
 
 # Fiber tests
 # 21bd960
-
 (def afiber (fiber/new (fn []
                          (def x (yield))
                          (error (string "hello, " x))) :ye))
@@ -127,7 +125,6 @@
 
 # yield tests
 # 171c0ce
-
 (def t (fiber/new (fn [&] (yield 1) (yield 2) 3)))
 
 (assert (= 1 (resume t)) "initial transfer to new fiber")
@@ -139,7 +136,6 @@
 # Test propagation of signals via fibers
 #
 # b8032ec61
-
 (def f (fiber/new (fn [] (error :abc) 1) :ei))
 (def res (resume f))
 (assert-error :abc (propagate res f) "propagate 1")
@@ -154,7 +150,6 @@
 
 # Var arg tests
 # f054586
-
 (def vargf (fn [more] (apply + more)))
 
 (assert (= 0 (vargf @[])) "var arg no arguments")
@@ -166,7 +161,6 @@
 
 # Higher order functions
 # d9f24ef
-
 (def compose (fn [f g] (fn [& xs] (f (apply g xs)))))
 
 (def -+ (compose - +))
@@ -179,7 +173,6 @@
 
 # UTF-8
 # d9f24ef
-
 #🐙🐙🐙🐙
 
 (defn foo [Θa Θb Θc] 0)
@@ -194,7 +187,6 @@
 
 # Symbols with @ character
 # d68eae9
-
 (def @ 1)
 (assert (= @ 1) "@ symbol")
 (def @-- 2)
@@ -204,7 +196,6 @@
 
 # Merge sort
 # f5b29b8
-
 # Imperative (and verbose) merge sort merge
 (defn merge-sort
   [xs ys]
@@ -246,7 +237,6 @@
 
 # Dynamic defs
 # ec65f03
-
 (def staticdef1 0)
 (defn staticdef1-inc [] (+ 1 staticdef1))
 (assert (= 1 (staticdef1-inc)) "before redefinition without :redef")
@@ -261,7 +251,6 @@
 (setdyn :redef nil)
 
 # 027b2a8
-
 (defn assert-many [f n e]
  (var good true)
  (loop [i :range [0 n]]
@@ -273,7 +262,6 @@
 
 # Test max triangle program
 # c0e373f
-
 # Find the maximum path from the top (root)
 # of the triangle to the leaves of the triangle.
 
@@ -289,7 +277,6 @@
 
 # Test it
 # Maximum path is 3 -> 10 -> 3 -> 9 for a total of 25
-
 (def triangle '[
  [3]
  [7 10]
@@ -348,13 +335,11 @@
 
 # Regression #24
 # f28477649
-
 (def t (put @{} :hi 1))
 (assert (deep= t @{:hi 1}) "regression #24")
 
 # Tuple types
 # c6edf03ae
-
 (assert (= (tuple/type '(1 2 3)) :parens) "normal tuple")
 (assert (= (tuple/type [1 2 3]) :parens) "normal tuple 1")
 (assert (= (tuple/type '[1 2 3]) :brackets) "bracketed tuple 2")
@@ -365,7 +350,6 @@
 
 # Bracket tuple issue
 # 340a6c4
-
 (let [do 3]
   (assert (= [3 1 2 3] [do 1 2 3]) "bracket tuples are never special forms"))
 (assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
@@ -378,7 +362,6 @@
 
 # Make sure Carriage Returns don't end up in doc strings
 # e528b86
-
 (assert (not (string/find "\r"
                           (get ((fiber/getenv (fiber/current)) 'cond)
                                :doc ""))) "no \\r in doc strings")
@@ -412,7 +395,6 @@
 
 # some tests for buffer/format
 # 029394d
-
 (assert (= (string (buffer/format @"" "pi = %6.3f" math/pi)) "pi =  3.142")
         "%6.3f")
 (assert (= (string (buffer/format @"" "pi = %+6.3f" math/pi)) "pi = +3.142")
@@ -435,7 +417,6 @@
 # Longstring indentation
 #
 # 7aa4241
-
 (defn reindent
   "Reindent the contents of a longstring as the Janet parser would.
   This include removing leading and trailing newlines."
@@ -526,7 +507,6 @@
 
 # missing symbols
 # issue #914 - 1eb34989d
-
 (defn lookup-symbol [sym] (defglobal sym 10) (dyn sym))
 
 (setdyn :missing-symbol lookup-symbol)

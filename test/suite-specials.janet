@@ -88,7 +88,6 @@
 
 # Metadata
 # ec2d7bf34
-
 (def foo-with-tags :a-tag :bar)
 (assert (get (dyn 'foo-with-tags) :a-tag)
         "extra keywords in def are metadata tags")
@@ -109,7 +108,6 @@
 
 # Break
 # 4a111b38b
-
 (var summation 0)
 (for i 0 10
   (+= summation i)
@@ -120,7 +118,6 @@
 
 # Break with value
 # 8ba112116
-
 # Shouldn't error out
 (assert-no-error "break 3" (for i 0 10 (if (> i 8) (break i))))
 (assert-no-error "break 4" ((fn [i] (if (> i 8) (break i))) 100))
@@ -163,7 +160,6 @@
 
 # Nested quasiquotation
 # 4199c42fe
-
 (def nested ~(a ~(b ,(+ 1 2) ,(foo ,(+ 1 3) d) e) f))
 (assert (deep= nested '(a ~(b ,(+ 1 2) ,(foo 4 d) e) f))
         "nested quasiquote")

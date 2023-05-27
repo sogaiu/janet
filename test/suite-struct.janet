@@ -36,7 +36,6 @@
 
 # Denormal structs
 # 38a7e4faf
-
 (assert (= (length {1 2 nil 3}) 1) "nil key struct literal")
 (assert (= (length (struct 1 2 nil 3)) 1) "nil key struct ctor")
 

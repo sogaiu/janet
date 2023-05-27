@@ -36,7 +36,6 @@
 
 # Long strings
 # 7e6342720
-
 (assert (= "hello, world" `hello, world`) "simple long string")
 (assert (= "hello, \"world\"" `hello, "world"`)
         "long string with embedded quotes")

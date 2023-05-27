@@ -23,7 +23,6 @@
 
 # Appending buffer to self
 # 6b76ac3d1
-
 (with-dyns [:out @""]
   (prin "abcd")
   (prin (dyn :out))
@@ -42,7 +41,6 @@
 
 # Check for bugs with printing self with buffer/format
 # bbcfaf128
-
 (def buftemp @"abcd")
 (assert (= (string (buffer/format buftemp "---%p---" buftemp))
            `abcd---@"abcd"---`) "buffer/format on self 1")
