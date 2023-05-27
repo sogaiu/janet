@@ -519,6 +519,14 @@
 # First commit removing the integer number type - 6b95326d7
 (assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
 
+# Simple function break - a8afc5b81
+(debug/fbreak map 1)
+(def f (fiber/new (fn [] (map inc [1 2 3])) :a))
+(resume f)
+(assert (= :debug (fiber/status f)) "debug/fbreak")
+(debug/unfbreak map 1)
+(map inc [1 2 3])
+
 # 88813c4
 (assert (deep= (in (disasm (defn a [] (def x 10) x)) :symbolmap)
                @[[0 3 0 'a] [1 3 1 'x]])
