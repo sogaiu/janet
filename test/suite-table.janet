@@ -54,6 +54,11 @@
 (assert (= nil (get roottab :childprop)) "table get 2")
 (assert (= 456 (get childtab :childprop)) "proto no effect")
 
+# b3aed1356
+(assert-error
+  "table rawget regression"
+  (table/new -1))
+
 # table/clone
 # 392813667
 (defn check-table-clone [x msg]

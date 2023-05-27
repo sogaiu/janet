@@ -57,6 +57,14 @@
 (assert (< [1 2 3] [1 2 3 -1]) "tuple comparison 5")
 (assert (> [1 2 3] [1 2]) "tuple comparison 6")
 
+# More numerical tests
+# e05022f
+(assert (= 1 1.0) "numerical equal 1")
+(assert (= 0 0.0) "numerical equal 2")
+(assert (= 0 -0.0) "numerical equal 3")
+(assert (= 2_147_483_647 2_147_483_647.0) "numerical equal 4")
+(assert (= -2_147_483_648 -2_147_483_648.0) "numerical equal 5")
+
 # issue #928 - d7ea122cf
 (assert (= (hash 0) (hash (* -1 0))) "hash -0 same as hash 0")
 

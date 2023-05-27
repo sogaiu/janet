@@ -21,24 +21,14 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Tuple types
-# c6edf03ae
-(assert (= (tuple/type '(1 2 3)) :parens) "normal tuple")
-(assert (= (tuple/type [1 2 3]) :parens) "normal tuple 1")
-(assert (= (tuple/type '[1 2 3]) :brackets) "bracketed tuple 2")
-(assert (= (tuple/type (-> '(1 2 3) marshal unmarshal)) :parens)
-        "normal tuple marshalled/unmarshalled")
-(assert (= (tuple/type (-> '[1 2 3] marshal unmarshal)) :brackets)
-        "normal tuple marshalled/unmarshalled")
+# Inline 3 argument get
+# a1ea62a
+(assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
 
-# Dynamic bindings
-# 7918add47, 513d551d
-(setdyn :a 10)
-(assert (= 40 (with-dyns [:a 25 :b 15] (+ (dyn :a) (dyn :b)))) "dyn usage 1")
-(assert (= 10 (dyn :a)) "dyn usage 2")
-(assert (= nil (dyn :b)) "dyn usage 3")
-(setdyn :a 100)
-(assert (= 100 (dyn :a)) "dyn usage 4")
+# Regression #24
+# f28477649
+(def t (put @{} :hi 1))
+(assert (deep= t @{:hi 1}) "regression #24")
 
 (end-suite)
 

@@ -21,6 +21,10 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# First commit removing the integer number type
+# 6b95326d7
+(assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
+
 # RNGs
 # aee168721
 (defn test-rng
@@ -41,6 +45,16 @@
                    (-> 456 math/rng (:buffer 16))) "math/rng-buffer 1")
 
 (assert-no-error "math/rng-buffer 2" (math/seedrandom "abcdefg"))
+
+# 027b2a8
+(defn assert-many [f n e]
+ (var good true)
+ (loop [i :range [0 n]]
+  (if (not (f))
+   (set good false)))
+ (assert good e))
+
+(assert-many (fn [] (>= 1 (math/random) 0)) 200 "(random) between 0 and 1")
 
 # 06aa0a124
 (assert (= (math/gcd 462 1071) 21) "math/gcd 1")

@@ -591,6 +591,13 @@
 (assert (deep= @[255] (peg/match '(number :w+) "0xff"))
         "simple number capture 2")
 
+# Marshal and unmarshal pegs
+# 446ab037b
+(def p (-> "abcd" peg/compile marshal unmarshal))
+(assert (peg/match p "abcd") "peg marshal 1")
+(assert (peg/match p "abcdefg") "peg marshal 2")
+(assert (not (peg/match p "zabcdefg")) "peg marshal 3")
+
 # to/thru bug
 # issue #971 - a895219d2
 (def pattern

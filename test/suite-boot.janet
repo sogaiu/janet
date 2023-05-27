@@ -187,6 +187,15 @@
                        (tuple (/ x 2) x))))
 (assert (= xs '((4 8) (3 6) (2 4) (1 2) (0 0))) "seq macro 2")
 
+# Looping idea
+# 45f8db0
+(def xs
+  (seq [x :in [-1 0 1] y :in [-1 0 1] :when (not= x y 0)] (tuple x y)))
+(def txs (apply tuple xs))
+
+(assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
+        "nested seq")
+
 # 515891b03
 (assert (deep= (tabseq [i :in (range 3)] i (* 3 i))
                @{0 0 1 3 2 6}))
@@ -280,6 +289,47 @@
           (sort (mapcat (fn [[x y z]] [z y x]) (partition 3 (range 99)))))
         "sort 5")
 (assert (<= ;(sort (map (fn [x] (math/random)) (range 1000)))) "sort 6")
+
+# Merge sort
+# f5b29b8
+# Imperative (and verbose) merge sort merge
+(defn merge-sort
+  [xs ys]
+  (def ret @[])
+  (def xlen (length xs))
+  (def ylen (length ys))
+  (var i 0)
+  (var j 0)
+  # Main merge
+  (while (if (< i xlen) (< j ylen))
+    (def xi (get xs i))
+    (def yj (get ys j))
+    (if (< xi yj)
+      (do (array/push ret xi) (set i (+ i 1)))
+      (do (array/push ret yj) (set j (+ j 1)))))
+  # Push rest of xs
+  (while (< i xlen)
+    (def xi (get xs i))
+    (array/push ret xi)
+    (set i (+ i 1)))
+  # Push rest of ys
+  (while (< j ylen)
+    (def yj (get ys j))
+    (array/push ret yj)
+    (set j (+ j 1)))
+  ret)
+
+(assert (apply <= (merge-sort @[1 3 5] @[2 4 6])) "merge sort merge 1")
+(assert (apply <= (merge-sort @[1 2 3] @[4 5 6])) "merge sort merge 2")
+(assert (apply <= (merge-sort @[1 3 5] @[2 4 6 6 6 9])) "merge sort merge 3")
+(assert (apply <= (merge-sort '(1 3 5) @[2 4 6 6 6 9])) "merge sort merge 4")
+
+(assert (deep= @[1 2 3 4 5] (sort @[5 3 4 1 2])) "sort 1")
+(assert (deep= @[{:a 1} {:a 4} {:a 7}]
+               (sort-by |($ :a) @[{:a 4} {:a 7} {:a 1}])) "sort 2")
+(assert (deep= @[1 2 3 4 5] (sorted [5 3 4 1 2])) "sort 3")
+(assert (deep= @[{:a 1} {:a 4} {:a 7}]
+               (sorted-by |($ :a) [{:a 4} {:a 7} {:a 1}])) "sort 4")
 
 # And and or
 # c16a9d846
@@ -708,6 +758,13 @@
                (freeze table-to-freeze)))
 (assert (deep= table-to-freeze-with-inline-proto (thaw table-to-freeze)))
 (assert (deep= table-to-freeze-with-inline-proto (thaw struct-to-thaw)))
+
+# Make sure Carriage Returns don't end up in doc strings
+# e528b86
+(assert (not (string/find "\r"
+                          (get ((fiber/getenv (fiber/current)) 'cond)
+                               :doc "")))
+        "no \\r in doc strings")
 
 # cff718f37
 (var counter 0)

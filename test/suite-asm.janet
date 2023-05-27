@@ -47,5 +47,9 @@
 (assert (= 55 (fibasm 10)) "fibasm 3")
 (assert (= 6765 (fibasm 20)) "fibasm 4")
 
+# dacbe29
+(def f (asm (disasm (fn [x] (fn [y] (+ x y))))))
+(assert (= ((f 10) 37) 47) "asm environment tables")
+
 (end-suite)
 

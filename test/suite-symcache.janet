@@ -21,6 +21,10 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
+# Symbol function
+# 5460ff1
+(assert (= (symbol "abc" 1 2 3) 'abc123) "symbol function")
+
 # Gensym tests
 # 3ccd68843
 (assert (not= (gensym) (gensym)) "two gensyms not equal")

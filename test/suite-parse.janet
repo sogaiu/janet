@@ -42,6 +42,80 @@
 (assert (= "hello, \\\\\\ \"world\"" `hello, \\\ "world"`)
         "long string with embedded quotes and backslashes")
 
+#
+# Longstring indentation
+#
+# 7aa4241
+(defn reindent
+  "Reindent the contents of a longstring as the Janet parser would.
+  This include removing leading and trailing newlines."
+  [text indent]
+
+  # Detect minimum indent
+  (var rewrite true)
+  (each index (string/find-all "\n" text)
+    (for i (+ index 1) (+ index indent 1)
+      (case (get text i)
+        nil (break)
+        (chr "\n") (break)
+        (chr " ") nil
+        (set rewrite false))))
+
+  # Only re-indent if no dedented characters.
+  (def str
+    (if rewrite
+      (peg/replace-all ~(* "\n" (between 0 ,indent " ")) "\n" text)
+      text))
+
+  (def first-nl (= (chr "\n") (first str)))
+  (def last-nl (= (chr "\n") (last str)))
+  (string/slice str (if first-nl 1 0) (if last-nl -2)))
+
+(defn reindent-reference
+  "Same as reindent but use parser functionality. Useful for
+  validating conformance."
+  [text indent]
+  (if (empty? text) (break text))
+  (def source-code
+    (string (string/repeat " " indent) "``````"
+            text
+            "``````"))
+  (parse source-code))
+
+(var indent-counter 0)
+(defn check-indent
+  [text indent]
+  (++ indent-counter)
+  (let [a (reindent text indent)
+        b (reindent-reference text indent)]
+    (assert (= a b)
+            (string "indent " indent-counter " (indent=" indent ")"))))
+
+(check-indent "" 0)
+(check-indent "\n" 0)
+(check-indent "\n" 1)
+(check-indent "\n\n" 0)
+(check-indent "\n\n" 1)
+(check-indent "\nHello, world!" 0)
+(check-indent "\nHello, world!" 1)
+(check-indent "Hello, world!" 0)
+(check-indent "Hello, world!" 1)
+(check-indent "\n    Hello, world!" 4)
+(check-indent "\n    Hello, world!\n" 4)
+(check-indent "\n    Hello, world!\n   " 4)
+(check-indent "\n    Hello, world!\n    " 4)
+(check-indent "\n    Hello, world!\n   dedented text\n    " 4)
+(check-indent "\n    Hello, world!\n    indented text\n    " 4)
+
+# Symbols with @ character
+# d68eae9
+(def @ 1)
+(assert (= @ 1) "@ symbol")
+(def @-- 2)
+(assert (= @-- 2) "@-- symbol")
+(def @hey 3)
+(assert (= @hey 3) "@hey symbol")
+
 # Parser clone
 # 43520ac67
 (def p (parser/new))

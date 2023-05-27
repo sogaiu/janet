@@ -41,6 +41,15 @@
 (assert (= (fiber/status myfiber) :dead)
         "fiber properly dies from debug state")
 
+# yield tests
+# 171c0ce
+(def t (fiber/new (fn [&] (yield 1) (yield 2) 3)))
+
+(assert (= 1 (resume t)) "initial transfer to new fiber")
+(assert (= 2 (resume t)) "second transfer to fiber")
+(assert (= 3 (resume t)) "return from fiber")
+(assert (= (fiber/status t) :dead) "finished fiber is dead")
+
 # Fix yields inside nested fibers
 # 909c906
 (def yielder
@@ -92,6 +101,11 @@
 (assert (< 100 1e23) "greater than immediate 1")
 (assert (< 1000 1e23) "greater than immediate 2")
 
+# Quasiquote bracketed tuples
+# e239980da
+(assert (= (tuple/type ~[1 2 3]) (tuple/type '[1 2 3]))
+        "quasiquote bracket tuples")
+
 # Regression #638
 # c68264802
 (compwhen
@@ -107,6 +121,22 @@
                (error "oops")))
            ([err] :caught))))
     "regression #638"))
+
+#
+# Test propagation of signals via fibers
+#
+# b8032ec61
+(def f (fiber/new (fn [] (error :abc) 1) :ei))
+(def res (resume f))
+(assert-error :abc (propagate res f) "propagate 1")
+
+# Cancel test
+# 28439d822
+(def f (fiber/new (fn [&] (yield 1) (yield 2) (yield 3) 4) :yti))
+(assert (= 1 (resume f)) "cancel resume 1")
+(assert (= 2 (resume f)) "cancel resume 2")
+(assert (= :hi (cancel f :hi)) "cancel resume 3")
+(assert (= :error (fiber/status f)) "cancel resume 4")
 
 (end-suite)
 

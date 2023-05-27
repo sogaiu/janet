@@ -21,24 +21,14 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Tuple types
-# c6edf03ae
-(assert (= (tuple/type '(1 2 3)) :parens) "normal tuple")
-(assert (= (tuple/type [1 2 3]) :parens) "normal tuple 1")
-(assert (= (tuple/type '[1 2 3]) :brackets) "bracketed tuple 2")
-(assert (= (tuple/type (-> '(1 2 3) marshal unmarshal)) :parens)
-        "normal tuple marshalled/unmarshalled")
-(assert (= (tuple/type (-> '[1 2 3] marshal unmarshal)) :brackets)
-        "normal tuple marshalled/unmarshalled")
-
-# Dynamic bindings
-# 7918add47, 513d551d
-(setdyn :a 10)
-(assert (= 40 (with-dyns [:a 25 :b 15] (+ (dyn :a) (dyn :b)))) "dyn usage 1")
-(assert (= 10 (dyn :a)) "dyn usage 2")
-(assert (= nil (dyn :b)) "dyn usage 3")
-(setdyn :a 100)
-(assert (= 100 (dyn :a)) "dyn usage 4")
+# Simple function break
+# a8afc5b81
+(debug/fbreak map 1)
+(def f (fiber/new (fn [] (map inc [1 2 3])) :a))
+(resume f)
+(assert (= :debug (fiber/status f)) "debug/fbreak")
+(debug/unfbreak map 1)
+(map inc [1 2 3])
 
 (end-suite)
 

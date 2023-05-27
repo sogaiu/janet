@@ -91,7 +91,7 @@
 (assert (= ((outerfun nil 2)) 2) "inner closure 2")
 (assert (= ((outerfun false 3)) 3) "inner closure 3")
 
-# e2c78b3
+# d6967a5
 ((fn []
    (var accum 1)
    (var counter 0)
@@ -107,10 +107,6 @@
   (set counter (+ 1 counter)))
 (assert (= accum 65536) "loop globally")
 
-# Symbol function
-# 5460ff1
-(assert (= (symbol "abc" 1 2 3) 'abc123) "symbol function")
-
 # Fiber tests
 # 21bd960
 (def afiber (fiber/new (fn []
@@ -122,31 +118,6 @@
 
 (assert (= afiber-result "hello, world!") "fiber error result")
 (assert (= (fiber/status afiber) :error) "fiber error status")
-
-# yield tests
-# 171c0ce
-(def t (fiber/new (fn [&] (yield 1) (yield 2) 3)))
-
-(assert (= 1 (resume t)) "initial transfer to new fiber")
-(assert (= 2 (resume t)) "second transfer to fiber")
-(assert (= 3 (resume t)) "return from fiber")
-(assert (= (fiber/status t) :dead) "finished fiber is dead")
-
-#
-# Test propagation of signals via fibers
-#
-# b8032ec61
-(def f (fiber/new (fn [] (error :abc) 1) :ei))
-(def res (resume f))
-(assert-error :abc (propagate res f) "propagate 1")
-
-# Cancel test
-# 28439d822
-(def f (fiber/new (fn [&] (yield 1) (yield 2) (yield 3) 4) :yti))
-(assert (= 1 (resume f)) "cancel resume 1")
-(assert (= 2 (resume f)) "cancel resume 2")
-(assert (= :hi (cancel f :hi)) "cancel resume 3")
-(assert (= :error (fiber/status f)) "cancel resume 4")
 
 # Var arg tests
 # f054586
@@ -184,81 +155,6 @@
 (assert (= "\u2623" "\U002623" "☣") "unicode escape 2")
 (assert (= "\u24c2" "\U0024c2" "Ⓜ") "unicode escape 3")
 (assert (= "\u0061" "a") "unicode escape 4")
-
-# Symbols with @ character
-# d68eae9
-(def @ 1)
-(assert (= @ 1) "@ symbol")
-(def @-- 2)
-(assert (= @-- 2) "@-- symbol")
-(def @hey 3)
-(assert (= @hey 3) "@hey symbol")
-
-# Merge sort
-# f5b29b8
-# Imperative (and verbose) merge sort merge
-(defn merge-sort
-  [xs ys]
-  (def ret @[])
-  (def xlen (length xs))
-  (def ylen (length ys))
-  (var i 0)
-  (var j 0)
-  # Main merge
-  (while (if (< i xlen) (< j ylen))
-    (def xi (get xs i))
-    (def yj (get ys j))
-    (if (< xi yj)
-      (do (array/push ret xi) (set i (+ i 1)))
-      (do (array/push ret yj) (set j (+ j 1)))))
-  # Push rest of xs
-  (while (< i xlen)
-    (def xi (get xs i))
-    (array/push ret xi)
-    (set i (+ i 1)))
-  # Push rest of ys
-  (while (< j ylen)
-    (def yj (get ys j))
-    (array/push ret yj)
-    (set j (+ j 1)))
-  ret)
-
-(assert (apply <= (merge-sort @[1 3 5] @[2 4 6])) "merge sort merge 1")
-(assert (apply <= (merge-sort @[1 2 3] @[4 5 6])) "merge sort merge 2")
-(assert (apply <= (merge-sort @[1 3 5] @[2 4 6 6 6 9])) "merge sort merge 3")
-(assert (apply <= (merge-sort '(1 3 5) @[2 4 6 6 6 9])) "merge sort merge 4")
-
-(assert (deep= @[1 2 3 4 5] (sort @[5 3 4 1 2])) "sort 1")
-(assert (deep= @[{:a 1} {:a 4} {:a 7}]
-               (sort-by |($ :a) @[{:a 4} {:a 7} {:a 1}])) "sort 2")
-(assert (deep= @[1 2 3 4 5] (sorted [5 3 4 1 2])) "sort 3")
-(assert (deep= @[{:a 1} {:a 4} {:a 7}]
-               (sorted-by |($ :a) [{:a 4} {:a 7} {:a 1}])) "sort 4")
-
-# Dynamic defs
-# ec65f03
-(def staticdef1 0)
-(defn staticdef1-inc [] (+ 1 staticdef1))
-(assert (= 1 (staticdef1-inc)) "before redefinition without :redef")
-(def staticdef1 1)
-(assert (= 1 (staticdef1-inc)) "after redefinition without :redef")
-(setdyn :redef true)
-(def dynamicdef2 0)
-(defn dynamicdef2-inc [] (+ 1 dynamicdef2))
-(assert (= 1 (dynamicdef2-inc)) "before redefinition with dyn :redef")
-(def dynamicdef2 1)
-(assert (= 2 (dynamicdef2-inc)) "after redefinition with dyn :redef")
-(setdyn :redef nil)
-
-# 027b2a8
-(defn assert-many [f n e]
- (var good true)
- (loop [i :range [0 n]]
-  (if (not (f))
-   (set good false)))
- (assert good e))
-
-(assert-many (fn [] (>= 1 (math/random) 0)) 200 "(random) between 0 and 1")
 
 # Test max triangle program
 # c0e373f
@@ -303,23 +199,6 @@
 (assert (= 3 ((get closures 3))) "closure in loop 3")
 (assert (= 4 ((get closures 4))) "closure in loop 4")
 
-# More numerical tests
-# e05022f
-(assert (= 1 1.0) "numerical equal 1")
-(assert (= 0 0.0) "numerical equal 2")
-(assert (= 0 -0.0) "numerical equal 3")
-(assert (= 2_147_483_647 2_147_483_647.0) "numerical equal 4")
-(assert (= -2_147_483_648 -2_147_483_648.0) "numerical equal 5")
-
-# Looping idea
-# 45f8db0
-(def xs
-  (seq [x :in [-1 0 1] y :in [-1 0 1] :when (not= x y 0)] (tuple x y)))
-(def txs (apply tuple xs))
-
-(assert (= txs [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]])
-        "nested seq")
-
 # Another regression test - no segfaults
 # 6b4824c
 (defn afn [x] x)
@@ -332,39 +211,6 @@
 (assert (= 1 (try (identity-var) ([err] 1))) "bad arity 3")
 (assert (= 1 (try (map-var) ([err] 1))) "bad arity 4")
 (assert (= 1 (try (not-var) ([err] 1))) "bad arity 5")
-
-# Regression #24
-# f28477649
-(def t (put @{} :hi 1))
-(assert (deep= t @{:hi 1}) "regression #24")
-
-# Tuple types
-# c6edf03ae
-(assert (= (tuple/type '(1 2 3)) :parens) "normal tuple")
-(assert (= (tuple/type [1 2 3]) :parens) "normal tuple 1")
-(assert (= (tuple/type '[1 2 3]) :brackets) "bracketed tuple 2")
-(assert (= (tuple/type (-> '(1 2 3) marshal unmarshal)) :parens)
-        "normal tuple marshalled/unmarshalled")
-(assert (= (tuple/type (-> '[1 2 3] marshal unmarshal)) :brackets)
-        "normal tuple marshalled/unmarshalled")
-
-# Bracket tuple issue
-# 340a6c4
-(let [do 3]
-  (assert (= [3 1 2 3] [do 1 2 3]) "bracket tuples are never special forms"))
-(assert (= ~(,defn 1 2 3) [defn 1 2 3]) "bracket tuples are never macros")
-(assert (= ~(,+ 1 2 3) [+ 1 2 3]) "bracket tuples are never function calls")
-
-# Quasiquote bracketed tuples
-# e239980da
-(assert (= (tuple/type ~[1 2 3]) (tuple/type '[1 2 3]))
-        "quasiquote bracket tuples")
-
-# Make sure Carriage Returns don't end up in doc strings
-# e528b86
-(assert (not (string/find "\r"
-                          (get ((fiber/getenv (fiber/current)) 'cond)
-                               :doc ""))) "no \\r in doc strings")
 
 # Detaching closure over non resumable fiber
 # issue #317 - 7c4ffe9b9
@@ -380,130 +226,20 @@
   (assert (= 1 (f1)) "detach-non-resumable-closure 1")
   (assert (= 2 (f2)) "detach-non-resumable-closure 2"))
 
-# 5c364e0
-(defn check-jdn [x]
-  (assert (deep= (parse (string/format "%j" x)) x) "round trip jdn"))
-
-(check-jdn 0)
-(check-jdn nil)
-(check-jdn [])
-(check-jdn @[[] [] 1231 9.123123 -123123 0.1231231230001])
-(check-jdn -0.123123123123)
-(check-jdn 12837192371923)
-(check-jdn "a string")
-(check-jdn @"a buffer")
-
-# some tests for buffer/format
-# 029394d
-(assert (= (string (buffer/format @"" "pi = %6.3f" math/pi)) "pi =  3.142")
-        "%6.3f")
-(assert (= (string (buffer/format @"" "pi = %+6.3f" math/pi)) "pi = +3.142")
-        "%6.3f")
-(assert (= (string (buffer/format @"" "pi = %40.20g" math/pi))
-           "pi =                     3.141592653589793116") "%6.3f")
-
-(assert (= (string (buffer/format @"" "🐼 = %6.3f" math/pi)) "🐼 =  3.142")
-        "UTF-8")
-(assert (= (string (buffer/format @"" "π = %.8g" math/pi)) "π = 3.1415927")
-        "π")
-(assert (= (string (buffer/format @"" "\xCF\x80 = %.8g" math/pi))
-           "\xCF\x80 = 3.1415927") "\xCF\x80")
-
-# Inline 3 argument get
-# a1ea62a
-(assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
-
-#
-# Longstring indentation
-#
-# 7aa4241
-(defn reindent
-  "Reindent the contents of a longstring as the Janet parser would.
-  This include removing leading and trailing newlines."
-  [text indent]
-
-  # Detect minimum indent
-  (var rewrite true)
-  (each index (string/find-all "\n" text)
-    (for i (+ index 1) (+ index indent 1)
-      (case (get text i)
-        nil (break)
-        (chr "\n") (break)
-        (chr " ") nil
-        (set rewrite false))))
-
-  # Only re-indent if no dedented characters.
-  (def str
-    (if rewrite
-      (peg/replace-all ~(* "\n" (between 0 ,indent " ")) "\n" text)
-      text))
-
-  (def first-nl (= (chr "\n") (first str)))
-  (def last-nl (= (chr "\n") (last str)))
-  (string/slice str (if first-nl 1 0) (if last-nl -2)))
-
-(defn reindent-reference
-  "Same as reindent but use parser functionality. Useful for validating conformance."
-  [text indent]
-  (if (empty? text) (break text))
-  (def source-code
-    (string (string/repeat " " indent) "``````"
-            text
-            "``````"))
-  (parse source-code))
-
-(var indent-counter 0)
-(defn check-indent
-  [text indent]
-  (++ indent-counter)
-  (let [a (reindent text indent)
-        b (reindent-reference text indent)]
-    (assert (= a b) (string "indent " indent-counter " (indent=" indent ")"))))
-
-(check-indent "" 0)
-(check-indent "\n" 0)
-(check-indent "\n" 1)
-(check-indent "\n\n" 0)
-(check-indent "\n\n" 1)
-(check-indent "\nHello, world!" 0)
-(check-indent "\nHello, world!" 1)
-(check-indent "Hello, world!" 0)
-(check-indent "Hello, world!" 1)
-(check-indent "\n    Hello, world!" 4)
-(check-indent "\n    Hello, world!\n" 4)
-(check-indent "\n    Hello, world!\n   " 4)
-(check-indent "\n    Hello, world!\n    " 4)
-(check-indent "\n    Hello, world!\n   dedented text\n    " 4)
-(check-indent "\n    Hello, world!\n    indented text\n    " 4)
-
-# Struct prototypes
-# 4d983e5
-(def x (struct/with-proto {1 2 3 4} 5 6))
-(def y (-> x marshal unmarshal))
-(def z {1 2 3 4})
-(assert (= 2 (get x 1)) "struct get proto value 1")
-(assert (= 4 (get x 3)) "struct get proto value 2")
-(assert (= 6 (get x 5)) "struct get proto value 3")
-(assert (= x y) "struct proto marshal equality 1")
-(assert (= (getproto x) (getproto y)) "struct proto marshal equality 2")
-(assert (= 0 (cmp x y)) "struct proto comparison 1")
-(assert (= 0 (cmp (getproto x) (getproto y))) "struct proto comparison 2")
-(assert (not= (cmp x z) 0) "struct proto comparison 3")
-(assert (not= (cmp y z) 0) "struct proto comparison 4")
-(assert (not= x z) "struct proto comparison 5")
-(assert (not= y z) "struct proto comparison 6")
-(assert (= (x 5) 6) "struct proto get 1")
-(assert (= (y 5) 6) "struct proto get 1")
-(assert (deep= x y) "struct proto deep= 1")
-(assert (deep-not= x z) "struct proto deep= 2")
-(assert (deep-not= y z) "struct proto deep= 3")
-
-# Marshal and unmarshal pegs
-# 446ab037b
-(def p (-> "abcd" peg/compile marshal unmarshal))
-(assert (peg/match p "abcd") "peg marshal 1")
-(assert (peg/match p "abcdefg") "peg marshal 2")
-(assert (not (peg/match p "zabcdefg")) "peg marshal 3")
+# Dynamic defs
+# ec65f03
+(def staticdef1 0)
+(defn staticdef1-inc [] (+ 1 staticdef1))
+(assert (= 1 (staticdef1-inc)) "before redefinition without :redef")
+(def staticdef1 1)
+(assert (= 1 (staticdef1-inc)) "after redefinition without :redef")
+(setdyn :redef true)
+(def dynamicdef2 0)
+(defn dynamicdef2-inc [] (+ 1 dynamicdef2))
+(assert (= 1 (dynamicdef2-inc)) "before redefinition with dyn :redef")
+(def dynamicdef2 1)
+(assert (= 2 (dynamicdef2-inc)) "after redefinition with dyn :redef")
+(setdyn :redef nil)
 
 # missing symbols
 # issue #914 - 1eb34989d
@@ -517,42 +253,6 @@
 (setdyn 'a nil)
 
 (assert-error "compile error" (eval-string "(+ a 5)"))
-
-(assert-error
-  "table rawget regression"
-  (table/new -1))
-
-# Named arguments
-# 87fc339
-(defn named-arguments
-  [&named bob sally joe]
-  (+ bob sally joe))
-
-(assert (= 15 (named-arguments :bob 3 :sally 5 :joe 7)) "named arguments 1")
-
-# a117252
-(defn named-opt-arguments
-  [&opt x &named a b c]
-  (+ x a b c))
-
-(assert (= 10 (named-opt-arguments 1 :a 2 :b 3 :c 4)) "named arguments 2")
-
-# dacbe29
-(def f (asm (disasm (fn [x] (fn [y] (+ x y))))))
-(assert (= ((f 10) 37) 47) "asm environment tables")
-
-# First commit removing the integer number type
-# 6b95326d7
-(assert (= 400 (math/sqrt 160000)) "sqrt(160000)=400")
-
-# Simple function break
-# a8afc5b81
-(debug/fbreak map 1)
-(def f (fiber/new (fn [] (map inc [1 2 3])) :a))
-(resume f)
-(assert (= :debug (fiber/status f)) "debug/fbreak")
-(debug/unfbreak map 1)
-(map inc [1 2 3])
 
 # 88813c4
 (assert (deep= (in (disasm (defn a [] (def x 10) x)) :symbolmap)

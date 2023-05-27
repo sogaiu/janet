@@ -147,6 +147,21 @@
 (assert (= (+ ;(range 6)) (myfn 0 1 2 :a 1 :b 6 :c 5 :d 11))
         "keyword args 2")
 
+# Named arguments
+# 87fc339
+(defn named-arguments
+  [&named bob sally joe]
+  (+ bob sally joe))
+
+(assert (= 15 (named-arguments :bob 3 :sally 5 :joe 7)) "named arguments 1")
+
+# a117252
+(defn named-opt-arguments
+  [&opt x &named a b c]
+  (+ x a b c))
+
+(assert (= 10 (named-opt-arguments 1 :a 2 :b 3 :c 4)) "named arguments 2")
+
 #
 # fn compilation special
 #

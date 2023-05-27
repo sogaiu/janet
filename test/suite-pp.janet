@@ -48,5 +48,18 @@
 (assert (= (string (buffer/format buftemp "---%p %p---" buftemp buftemp))
            `abcd---@"abcd" @"abcd"---`) "buffer/format on self 2")
 
+# 5c364e0
+(defn check-jdn [x]
+  (assert (deep= (parse (string/format "%j" x)) x) "round trip jdn"))
+
+(check-jdn 0)
+(check-jdn nil)
+(check-jdn [])
+(check-jdn @[[] [] 1231 9.123123 -123123 0.1231231230001])
+(check-jdn -0.123123123123)
+(check-jdn 12837192371923)
+(check-jdn "a string")
+(check-jdn @"a buffer")
+
 (end-suite)
 
