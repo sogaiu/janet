@@ -388,6 +388,22 @@
 (check-jdn "a string")
 (check-jdn @"a buffer")
 
+# some tests for buffer/format - 029394d
+
+(assert (= (string (buffer/format @"" "pi = %6.3f" math/pi)) "pi =  3.142")
+        "%6.3f")
+(assert (= (string (buffer/format @"" "pi = %+6.3f" math/pi)) "pi = +3.142")
+        "%6.3f")
+(assert (= (string (buffer/format @"" "pi = %40.20g" math/pi))
+           "pi =                     3.141592653589793116") "%6.3f")
+
+(assert (= (string (buffer/format @"" "🐼 = %6.3f" math/pi)) "🐼 =  3.142")
+        "UTF-8")
+(assert (= (string (buffer/format @"" "π = %.8g" math/pi)) "π = 3.1415927")
+        "π")
+(assert (= (string (buffer/format @"" "\xCF\x80 = %.8g" math/pi))
+           "\xCF\x80 = 3.1415927") "\xCF\x80")
+
 # Inline 3 argument get - a1ea62a
 (assert (= 10 (do (var a 10) (set a (get '{} :a a)))) "inline get 1")
 

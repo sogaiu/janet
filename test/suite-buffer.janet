@@ -21,7 +21,7 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Buffer blitting
+# Buffer blitting - 16ebb1118
 
 (def b (buffer/new-filled 100))
 (buffer/bit-set b 100)
@@ -41,16 +41,7 @@
 (buffer/blit b2 "abcdefg" 5 6)
 (assert (= (string b2) "joytogjoyto") "buffer/blit 3")
 
-# Buffer self blitting, check for use after free
-(def buf1 @"1234567890")
-(buffer/blit buf1 buf1 -1)
-(buffer/blit buf1 buf1 -1)
-(buffer/blit buf1 buf1 -1)
-(buffer/blit buf1 buf1 -1)
-(assert (= (string buf1) (string/repeat "1234567890" 16))
-        "buffer blit against self")
-
-# Buffer push word
+# Buffer push word - e755f9830
 
 (def b3 @"")
 (buffer/push-word b3 0xFF 0x11)
@@ -61,7 +52,7 @@
 (assert (= 8 (length b3)) "buffer/push-word 3")
 (assert (= "\xFF\xFF\xFF\xFF\0\x11\0\0" (string b3)) "buffer/push-word 4")
 
-# Buffer push string
+# Buffer push string - 175925207
 
 (def b4 (buffer/new-filled 10 0))
 (buffer/push-string b4 b4)
@@ -71,32 +62,7 @@
 (buffer/push-string b5 "456" @"789")
 (assert (= "123456789" (string b5)) "buffer/push-buffer 2")
 
-# Check for bugs with printing self with buffer/format
-
-(def buftemp @"abcd")
-(assert (= (string (buffer/format buftemp "---%p---" buftemp))
-           `abcd---@"abcd"---`) "buffer/format on self 1")
-(def buftemp @"abcd")
-(assert (= (string (buffer/format buftemp "---%p %p---" buftemp buftemp))
-           `abcd---@"abcd" @"abcd"---`) "buffer/format on self 2")
-
-# some tests for buffer/format
-
-(assert (= (string (buffer/format @"" "pi = %6.3f" math/pi)) "pi =  3.142")
-        "%6.3f")
-(assert (= (string (buffer/format @"" "pi = %+6.3f" math/pi)) "pi = +3.142")
-        "%6.3f")
-(assert (= (string (buffer/format @"" "pi = %40.20g" math/pi))
-           "pi =                     3.141592653589793116") "%6.3f")
-
-(assert (= (string (buffer/format @"" "🐼 = %6.3f" math/pi)) "🐼 =  3.142")
-        "UTF-8")
-(assert (= (string (buffer/format @"" "π = %.8g" math/pi)) "π = 3.1415927")
-        "π")
-(assert (= (string (buffer/format @"" "\xCF\x80 = %.8g" math/pi))
-           "\xCF\x80 = 3.1415927") "\xCF\x80")
-
-# Regression #301
+# Regression #301 - a3d4ecddb
 (def b (buffer/new-filled 128 0x78))
 (assert (= 38 (length (buffer/blit @"" b -1 90))) "buffer/blit 1")
 
@@ -106,7 +72,7 @@
 (assert (deep= @"cde" (buffer/blit @"" a -1 2 5)) "buffer/blit 4")
 (assert (deep= @"de" (buffer/blit @"" a -1 3 5)) "buffer/blit 5")
 
-# buffer/push-at
+# buffer/push-at - c55d93512
 (assert (deep= @"abc456" (buffer/push-at @"abc123" 3 "456"))
         "buffer/push-at 1")
 (assert (deep= @"abc456789" (buffer/push-at @"abc123" 3 "456789"))
