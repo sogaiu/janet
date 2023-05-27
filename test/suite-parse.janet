@@ -28,6 +28,12 @@
 
 (assert (= '(1 2 3) (quote (1 2 3)) (tuple 1 2 3)) "quote shorthand")
 
+# String literals
+# 45f8db0
+(assert (= "abcd" "\x61\x62\x63\x64") "hex escapes")
+(assert (= "\e" "\x1B") "escape character")
+(assert (= "\x09" "\t") "tab character")
+
 # Long strings
 # 7e6342720
 

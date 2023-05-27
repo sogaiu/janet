@@ -32,12 +32,6 @@
 (assert (= 22 (plus one (plus 1 2 two) (plus 8 (plus zero 1) 4 three)))
         "nested function calls")
 
-# String literals
-# 45f8db0
-(assert (= "abcd" "\x61\x62\x63\x64") "hex escapes")
-(assert (= "\e" "\x1B") "escape character")
-(assert (= "\x09" "\t") "tab character")
-
 # McCarthy's 91 function
 # 2771171
 (var f91 nil)
