@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Array tests - e05022f
+# Array tests
+# e05022f
 
 (defn array=
   "Check if two arrays are equal in an element by element comparison"
@@ -39,7 +40,8 @@
 (assert (array= (array/slice @[1 2 3] 0 2) @[1 2]) "array/slice 1")
 (assert (array= (array/slice @[0 7 3 9 1 4] 2 -2) @[3 9 1]) "array/slice 2")
 
-# Array remove - 687a3c9
+# Array remove
+# 687a3c9
 
 (assert (deep= (array/remove @[1 2 3 4 5] 2) @[1 2 4 5]) "array/remove 1")
 (assert (deep= (array/remove @[1 2 3 4 5] 2 2) @[1 2 5]) "array/remove 2")
