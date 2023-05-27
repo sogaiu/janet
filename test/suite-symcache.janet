@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Gensym tests - 3ccd68843
+# Gensym tests
+# 3ccd68843
 
 (assert (not= (gensym) (gensym)) "two gensyms not equal")
 ((fn []
