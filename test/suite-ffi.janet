@@ -23,7 +23,7 @@
 
 (def has-ffi (dyn 'ffi/native))
 
-# FFI check
+# FFI check - d80356158
 (compwhen has-ffi
   (ffi/context))
 
@@ -35,6 +35,7 @@
   (memcpy buffer1 buffer2 4)
   (assert (= (string buffer1) "bbbb") "ffi 1 - memcpy"))
 
+# cfaae47ce
 (compwhen has-ffi
   (assert (= 8 (ffi/size [:int :char])) "size unpacked struct 1")
   (assert (= 5 (ffi/size [:pack :int :char])) "size packed struct 1")
