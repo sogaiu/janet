@@ -3142,5 +3142,23 @@ neldb\0\0\0\xD8\x05printG\x01\0\xDE\xDE\xDE'\x03\0marshal_tes/\x02
 (assert (deep= (peg/match sym-prefix-peg @"1234" 4) @[0 "1234"]) "peg lookback 2")
 
 (assert (deep= (peg/replace-all '(* (<- 1) 1 (backmatch)) "xxx" "aba cdc efa") @"xxx xxx efa") "peg replace-all 1")
+(import ./helper :prefix "" :exit true)
+(start-suite 14)
+
+(assert (deep=
+  (peg/match '(not (* (constant 7) "a")) "hello")
+  @[]) "peg not")
+
+(assert (deep=
+  (peg/match '(if-not (* (constant 7) "a") "hello") "hello")
+  @[]) "peg if-not")
+
+(assert (deep=
+  (peg/match '(if-not (drop (* (constant 7) "a")) "hello") "hello")
+  @[]) "peg if-not drop")
+
+(assert (deep=
+  (peg/match '(if (not (* (constant 7) "a")) "hello") "hello")
+  @[]) "peg if not")
 
 (end-suite)
