@@ -21,14 +21,16 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# Let - 807f981
+# Let
+# 807f981
 
 (assert (= (let [a 1 b 2] (+ a b)) 3) "simple let")
 (assert (= (let [[a b] @[1 2]] (+ a b)) 3) "destructured let")
 (assert (= (let [[a [c d] b] @[1 (tuple 4 3) 2]] (+ a b c d)) 10)
         "double destructured let")
 
-# Macros - b305a7c
+# Macros
+# b305a7c
 
 (defn dub [x] (+ x x))
 (assert (= 2 (dub 1)) "defn macro")
@@ -46,11 +48,13 @@
     (++ i))
   (assert (= i 6) "when macro"))
 
-# Add truthy? to core - ded08b6
+# Add truthy? to core
+# ded08b6
 (assert (= true ;(map truthy? [0 "" true @{} {} [] '()])) "truthy values")
 (assert (= false ;(map truthy? [nil false])) "non-truthy values")
 
 ## Polymorphic comparison -- Issue #272
+# 81d301a42
 
 # confirm polymorphic comparison delegation to primitive comparators:
 (assert (= 0 (cmp 3 3)) "compare-primitive integers (1)")
@@ -135,7 +139,8 @@
     (assert (= c (compare x y))
             (string/format "compare polymorphic %q %q %d" x y c))))
 
-# Add any? predicate to core - 7478ad11
+# Add any? predicate to core
+# 7478ad11
 (assert (= nil (any? [])) "any? 1")
 (assert (= nil (any? [false nil])) "any? 2")
 (assert (= nil (any? [nil false])) "any? 3")
@@ -145,7 +150,8 @@
            (any? [nil nil false nil nil true nil nil nil nil false :a nil]))
         "any? 6")
 
-# Some higher order functions and macros - 5e2de33
+# Some higher order functions and macros
+# 5e2de33
 
 (def my-array @[1 2 3 4 5 6])
 (def x (if-let [x (get my-array 5)] x))
@@ -157,7 +163,8 @@
 (def myfun (juxt + - * /))
 (assert (= [2 -2 2 0.5] (myfun 2)) "juxt")
 
-# Case statements - 5249228
+# Case statements
+# 5249228
 (assert
   (= :six (case (+ 1 2 3)
             1 :one
@@ -173,29 +180,35 @@
 (assert (= 7 (case :a :b 5 :c 6 :u 10 7)) "case with default")
 
 # Testing the seq, tabseq, catseq, and loop macros
+# 547529e
 (def xs (apply tuple (seq [x :range [0 10] :when (even? x)]
                        (tuple (/ x 2) x))))
 (assert (= xs '((0 0) (1 2) (2 4) (3 6) (4 8))) "seq macro 1")
 
+# 624be87c9
 (def xs (apply tuple (seq [x :down [8 -2] :when (even? x)]
                        (tuple (/ x 2) x))))
 (assert (= xs '((4 8) (3 6) (2 4) (1 2) (0 0))) "seq macro 2")
 
+# 515891b03
 (assert (deep= (tabseq [i :in (range 3)] i (* 3 i))
                @{0 0 1 3 2 6}))
 
 (assert (deep= (tabseq [i :in (range 3)] i)
                @{}))
 
+# ccd874fe4
 (def xs (catseq [x :range [0 3]] [x x]))
 (assert (deep= xs @[0 0 1 1 2 2]) "catseq")
 
 # :range-to and :down-to
+# e0c9910d8
 (assert (deep= (seq [x :range-to [0 10]] x) (seq [x :range [0 11]] x))
         "loop :range-to")
 (assert (deep= (seq [x :down-to [10 0]] x) (seq [x :down [10 -1]] x))
         "loop :down-to")
 
+# 7880d7320
 (def res @{})
 (loop [[k v] :pairs @{1 2 3 4 5 6}]
   (put res k v))
@@ -204,7 +217,8 @@
           (= (get res 3) 4)
           (= (get res 5) 6)) "loop :pairs")
 
-# Issue 428
+# Issue #428
+# 08a3687eb
 (var result nil)
 (defn f [] (yield {:a :ok}))
 (assert-no-error "issue 428 1"
@@ -212,6 +226,7 @@
 (assert (= result :ok) "issue 428 2")
 
 # Generators
+# 184fe31e0
 (def gen (generate [x :range [0 100] :when (pos? (% x 4))] x))
 (var gencount 0)
 (loop [x :in gen]
@@ -220,6 +235,7 @@
 (assert (= gencount 75) "generate loop count")
 
 # Even and odd
+# ff163a5ae
 
 (assert (odd? 9) "odd? 1")
 (assert (odd? -9) "odd? 2")
@@ -242,6 +258,7 @@
 (assert (not (even? -10.6)) "even? 9")
 
 # Map arities
+# 25ded775a
 (assert (deep= (map inc [1 2 3]) @[2 3 4]))
 (assert (deep= (map + [1 2 3] [10 20 30]) @[11 22 33]))
 (assert (deep= (map + [1 2 3] [10 20 30] [100 200 300]) @[111 222 333]))
@@ -253,6 +270,7 @@
                @[11111 22222 33333]))
 
 # Mapping uses the shortest sequence
+# a69799aa4
 (assert (deep= (map + [1 2 3 4] [10 20 30]) @[11 22 33]))
 (assert (deep= (map + [1 2 3 4] [10 20 30] [100 200]) @[111 222]))
 (assert (deep= (map + [1 2 3 4] [10 20 30] [100 200] [1000]) @[1111]))
@@ -260,6 +278,7 @@
 (assert (= false (deep-not= [1] [1])) "issue #1149")
 
 # Sort function
+# 2ca9300bf
 (assert (deep=
           (range 99)
           (sort (mapcat (fn [[x y z]] [z y x]) (partition 3 (range 99)))))
@@ -267,6 +286,7 @@
 (assert (<= ;(sort (map (fn [x] (math/random)) (range 1000)))) "sort 6")
 
 # And and or
+# c16a9d846
 
 (assert (= (and true true) true) "and true true")
 (assert (= (and true false) false) "and true false")
@@ -290,19 +310,22 @@
 (assert (= (or) nil) "or with no arguments")
 
 # And/or checks
+# 6123c41f1
 
 (assert (= false (and false false)) "and 1")
 (assert (= false (or false false)) "or 1")
 
 # Range
+# a982f351d
 (assert (deep= (range 10) @[0 1 2 3 4 5 6 7 8 9]) "range 1 argument")
 (assert (deep= (range 5 10) @[5 6 7 8 9]) "range 2 arguments")
 (assert (deep= (range 5 10 2) @[5 7 9]) "range 3 arguments")
+# 11cd1279d
 (assert (= (length (range 10)) 10) "(range 10)")
 (assert (= (length (range 1 10)) 9) "(range 1 10)")
-
 (assert (deep= @{:a 1 :b 2 :c 3} (zipcoll '[:a :b :c] '[1 2 3])) "zipcoll")
 
+# bc8be266f
 (def- a 100)
 (assert (= a 100) "def-")
 
@@ -325,12 +348,13 @@
                   0)) "match 3")
 
 # Match checks
-
+# 47e8f669f
 (assert (= :hi (match nil nil :hi)) "match 1")
 (assert (= :hi (match {:a :hi} {:a a} a)) "match 2")
 (assert (= nil (match {:a :hi} {:a a :b b} a)) "match 3")
 (assert (= nil (match [1 2] [a b c] a)) "match 4")
 (assert (= 2 (match [1 2] [a b] b)) "match 5")
+# db631097b
 (assert (= [2 :a :b] (match [1 2 :a :b] [o & rest] rest)) "match 6")
 (assert (= [] (match @[:a] @[x & r] r :fallback)) "match 7")
 (assert (= :fallback (match @[1] @[x y & r] r :fallback)) "match 8")
@@ -338,6 +362,7 @@
         "match 9")
 
 # Test cases for #293
+# d3b9b8d45
 (assert (= :yes (match [1 2 3] [_ a _] :yes :no)) "match wildcard 1")
 (assert (= :no (match [1 2 3] [__ a __] :yes :no)) "match wildcard 2")
 (assert (= :yes (match [1 2 [1 2 3]] [_ a [_ _ _]] :yes :no))
@@ -352,14 +377,17 @@
                  {:a a :b _ :c _ :d _} :no
                  {:a _ :b _ :c _} nil
                  :no)) "match wildcard 7")
+# issue #529 - 602010600
 (assert (= "t" (match [true nil] [true _] "t")) "match wildcard 8")
 
 # quoted match test
+# 425a0fcf0
+
 (assert (= :yes (match 'john 'john :yes _ :nope)) "quoted literal match 1")
 (assert (= :nope (match 'john ''john :yes _ :nope)) "quoted literal match 2")
 
 # Some macros
-
+# 7880d7320
 (assert (= 2 (if-not 1 3 2)) "if-not 1")
 (assert (= 3 (if-not false 3)) "if-not 2")
 (assert (= 3 (if-not nil 3 2)) "if-not 3")
@@ -368,12 +396,14 @@
 (assert (= 4 (unless false (+ 1 2 3) 4)) "unless")
 
 # take
+# 18da183ef
 
 (assert (deep= (take 0 []) []) "take 1")
 (assert (deep= (take 10 []) []) "take 2")
 (assert (deep= (take 0 [1 2 3 4 5]) []) "take 3")
 (assert (deep= (take 10 [1 2 3]) [1 2 3]) "take 4")
 (assert (deep= (take -1 [:a :b :c]) []) "take 5")
+# 34019222c
 (assert (deep= (take 3 (generate [x :in [1 2 3 4 5]] x)) @[1 2 3])
         "take from fiber")
 # NB: repeatedly resuming a fiber created with `generate` includes a `nil`
@@ -383,6 +413,7 @@
         "take from short fiber")
 
 # take-until
+# 18da183ef
 
 (assert (deep= (take-until pos? @[]) []) "take-until 1")
 (assert (deep= (take-until pos? @[1 2 3]) []) "take-until 2")
@@ -394,6 +425,7 @@
                @[98 111 111 107]) "take-until from fiber")
 
 # take-while
+# 18da183ef
 
 (assert (deep= (take-while neg? @[]) []) "take-while 1")
 (assert (deep= (take-while neg? @[1 2 3]) []) "take-while 2")
@@ -404,6 +436,7 @@
                @[-1]) "take-while from fiber")
 
 # drop
+# 18da183ef
 
 (assert (deep= (drop 0 []) []) "drop 1")
 (assert (deep= (drop 10 []) []) "drop 2")
@@ -418,6 +451,7 @@
 (assert-error :invalid-type (drop 3 {}) "drop 11")
 
 # drop-until
+# 75dc08f
 
 (assert (deep= (drop-until pos? @[]) []) "drop-until 1")
 (assert (deep= (drop-until pos? @[1 2 3]) [1 2 3]) "drop-until 2")
@@ -427,12 +461,14 @@
 (assert (deep= (drop-until |(= $ 115) "books") "s") "drop-until 6")
 
 # Comment macro
+# issue #110 - 698e89aba
 (comment 1)
 (comment 1 2)
 (comment 1 2 3)
 (comment 1 2 3 4)
 
 # comp should be variadic
+# 5c83ebd75, 02ce3031
 (assert (= 10 ((comp +) 1 2 3 4)) "variadic comp 1")
 (assert (= 11 ((comp inc +) 1 2 3 4)) "variadic comp 2")
 (assert (= 12 ((comp inc inc +) 1 2 3 4)) "variadic comp 3")
@@ -443,6 +479,7 @@
         "variadic comp 7")
 
 # Function shorthand
+# 44e752d73
 (assert (= (|(+ 1 2 3)) 6) "function shorthand 1")
 (assert (= (|(+ 1 2 3 $) 4) 10) "function shorthand 2")
 (assert (= (|(+ 1 2 3 $0) 4) 10) "function shorthand 3")
@@ -452,8 +489,10 @@
 (assert (= (((|||4))) 4) "function shorthand 7")
 (assert (= (|(+ $1 $1 $1 $1) 2 4) 16) "function shorthand 8")
 (assert (= (|(+ $0 $1 $3 $2 $6) 0 1 2 3 4 5 6) 12) "function shorthand 9")
+# 5f5147652
 (assert (= (|(+ $0 $99) ;(range 100)) 99) "function shorthand 10")
 
+# 655d4b3aa
 (defn idx= [x y] (= (tuple/slice x) (tuple/slice y)))
 
 # Simple take, drop, etc. tests.
@@ -461,21 +500,26 @@
 (assert (idx= (drop 10 (range 100)) (range 10 100)) "drop 10")
 
 # with-vars
+# 6ceaf9d28
 (var abc 123)
 (assert (= 356 (with-vars [abc 456] (- abc 100))) "with-vars 1")
 (assert-error "with-vars 2" (with-vars [abc 456] (error :oops)))
 (assert (= abc 123) "with-vars 3")
 
 # Top level unquote
+# 2487162cc
 (defn constantly
   []
   (comptime (math/random)))
 
 (assert (= (constantly) (constantly)) "comptime 1")
 
+# issue #232 - b872ee024
 (assert-error "arity issue in macro" (eval '(each [])))
+# c6b639b93
 (assert-error "comptime issue" (eval '(comptime (error "oops"))))
 
+# 962cd7e5f
 (var counter 0)
 (when-with [x nil |$]
            (++ counter))
@@ -489,16 +533,19 @@
 
 (assert (= 40 counter) "if-with 1")
 
+# a45509d28
 (def a @[])
 (eachk x [:a :b :c :d]
   (array/push a x))
 (assert (deep= (range 4) a) "eachk 1")
 
+# issue 609 - 1fcaffe
 (with-dyns [:err @""]
   (tracev (def my-unique-var-name true))
   (assert my-unique-var-name "tracev upscopes"))
 
 # Prompts and Labels
+# 59d288c
 
 (assert (= 10 (label a (for i 0 10 (if (= i 5) (return a 10))))) "label 1")
 
@@ -529,26 +576,33 @@
 (assert (= 10 (prompt :a (for i 0 10 (inner-loop2 i)))) "prompt 3")
 
 # chr
+# issue 304 - 77343e02e
 (assert (= (chr "a") 97) "chr 1")
 
 # Reduce2
+# 3eb0927a2
 
 (assert (= (reduce + 0 (range 1 10)) (reduce2 + (range 10))) "reduce2 1")
+# 65379741f
 (assert (= (reduce * 1 (range 2 10)) (reduce2 * (range 1 10))) "reduce2 2")
 (assert (= nil (reduce2 * [])) "reduce2 3")
 
 # Accumulate
+# 3eb0927a2
 
 (assert (deep= (accumulate + 0 (range 5)) @[0 1 3 6 10]) "accumulate 1")
 (assert (deep= (accumulate2 + (range 5)) @[0 1 3 6 10]) "accumulate2 1")
+# 65379741f
 (assert (deep= @[] (accumulate2 + [])) "accumulate2 2")
 (assert (deep= @[] (accumulate 0 + [])) "accumulate 2")
 
-# in vs get regression - #340
+# in vs get regression
+# issue #340 - b63a0796f
 (assert (nil? (first @"")) "in vs get 1")
 (assert (nil? (last @"")) "in vs get 1")
 
 # index-of
+# 259812314
 (assert (= nil (index-of 10 [])) "index-of 1")
 (assert (= nil (index-of 10 [1 2 3])) "index-of 2")
 (assert (= 1 (index-of 2 [1 2 3])) "index-of 3")
@@ -562,9 +616,11 @@
 (assert (= nil (index-of 10 @[1 2 3])) "index-of 11")
 
 # Regression
+# issue #463 - 7e7498350
 (assert (= {:x 10} (|(let [x $] ~{:x ,x}) 10)) "issue 463")
 
 # macex testing
+# 7e7498350
 (assert (deep= (macex1 '~{1 2 3 4}) '~{1 2 3 4}) "macex1 qq struct")
 (assert (deep= (macex1 '~@{1 2 3 4}) '~@{1 2 3 4}) "macex1 qq table")
 (assert (deep= (macex1 '~(1 2 3 4)) '~[1 2 3 4]) "macex1 qq tuple")
@@ -574,6 +630,7 @@
         "macex1 qq array")
 
 # Sourcemaps in threading macros
+# b6175e429
 (defn check-threading [macro expansion]
   (def expanded (macex1 (tuple macro 0 '(x) '(y))))
   (assert (= expanded expansion) (string macro " expansion value"))
@@ -592,6 +649,7 @@
 (check-threading '->> '(y (x 0)))
 
 # keep-syntax
+# b6175e429
 (let [brak '[1 2 3]
       par '(1 2 3)]
 
@@ -617,30 +675,35 @@
           "keep-syntax no mutate")
   (assert (= (keep-syntax 1 brak) brak) "keep-syntax brackets ignore type"))
 
-# Curenv - 28439d822, f7c556e
+# Curenv
+# 28439d822, f7c556e
 (assert (= (curenv) (curenv 0)) "curenv 1")
 (assert (= (table/getproto (curenv)) (curenv 1)) "curenv 2")
 (assert (= nil (curenv 1000000)) "curenv 3")
 (assert (= root-env (curenv 1)) "curenv 4")
 
 # Import macro test
+# a31e079f9
 (assert-no-error "import macro 1" (macex '(import a :as b :fresh maybe)))
 (assert (deep= ~(,import* "a" :as "b" :fresh maybe)
                (macex '(import a :as b :fresh maybe))) "import macro 2")
 
 # #477 walk preserving bracket type
+# 0a1d902f4
 (assert (= :brackets (tuple/type (postwalk identity '[])))
         "walk square brackets 1")
 (assert (= :brackets (tuple/type (walk identity '[])))
         "walk square brackets 2")
 
 # Issue #751
+# 547fda6a4
 (def t {:side false})
 (assert (nil? (get-in t [:side :note])) "get-in with false value")
 (assert (= (get-in t [:side :note] "dflt") "dflt")
         "get-in with false value and default")
 
 # Evaluate stream with `dofile`
+# 9cc4e4812
 (def [r w] (os/pipe))
 (:write w "(setdyn :x 10)")
 (:close w)
@@ -648,6 +711,7 @@
 (assert (= (stream-env :x) 10) "dofile stream 1")
 
 # Test thaw and freeze
+# 9cc0645a1
 (def table-to-freeze @{:c 22 :b [1 2 3 4] :d @"test" :e "test2"})
 (def table-to-freeze-with-inline-proto
   @{:a @[1 2 3] :b @[1 2 3 4] :c 22 :d @"test" :e @"test2"})
@@ -660,6 +724,7 @@
 (assert (deep= table-to-freeze-with-inline-proto (thaw table-to-freeze)))
 (assert (deep= table-to-freeze-with-inline-proto (thaw struct-to-thaw)))
 
+# cff718f37
 (var counter 0)
 (def thunk (delay (++ counter)))
 (assert (= (thunk) 1) "delay 1")
