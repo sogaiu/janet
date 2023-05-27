@@ -21,7 +21,8 @@
 (import ./helper :prefix "" :exit true)
 (start-suite)
 
-# More fiber semantics - 0fd9224e4
+# More fiber semantics
+# 0fd9224e4
 
 (var myvar 0)
 (defn fiberstuff [&]
@@ -41,7 +42,8 @@
 (assert (= (fiber/status myfiber) :dead)
         "fiber properly dies from debug state")
 
-# Fix yields inside nested fibers - 909c906
+# Fix yields inside nested fibers
+# 909c906
 (def yielder
   (coro
     (defer (yield :end)
@@ -50,7 +52,8 @@
 (assert (deep= @[:item :item :item :item :item :end] items)
         "yield within nested fibers")
 
-# Calling non functions - b9c0fc820
+# Calling non functions
+# b9c0fc820
 
 (assert (= 1 ({:ok 1} :ok)) "calling struct")
 (assert (= 2 (@{:ok 2} :ok)) "calling table")
@@ -61,7 +64,8 @@
 (assert (= :oops (try ((+ 2 -1) 1) ([err] :oops)))
         "calling number fails")
 
-# Method test - d5bab7262
+# Method test
+# d5bab7262
 
 (def Dog @{:bark (fn bark [self what]
                    (string (self :name) " says " what "!"))})
@@ -73,7 +77,8 @@
 (def spot (make-dog "spot"))
 (assert (= "spot says hi!" (:bark spot "hi")) "oo 2")
 
-# Negative tests - 67f26b7d7
+# Negative tests
+# 67f26b7d7
 
 (assert-error "+ check types" (+ 1 ()))
 (assert-error "- check types" (- 1 ()))
@@ -84,13 +89,15 @@
 (assert-error "bxor check types" (bxor 1 ()))
 (assert-error "bnot check types" (bnot ()))
 
-# Comparisons - 10dcbc639
+# Comparisons
+# 10dcbc639
 (assert (> 1e23 100) "less than immediate 1")
 (assert (> 1e23 1000) "less than immediate 2")
 (assert (< 100 1e23) "greater than immediate 1")
 (assert (< 1000 1e23) "greater than immediate 2")
 
-# Regression #638 - c68264802
+# Regression #638
+# c68264802
 (compwhen
   (dyn 'ev/go)
   (assert
