@@ -71,11 +71,13 @@
 (assert (= 0xFF (bxor 0x0F 0xF0)) "bit xor")
 (assert (= 0xF0 (bxor 0xFF 0x0F)) "bit xor 2")
 
-# Some testing for not= - 08f6c642d
+# Some testing for not=
+# 08f6c642d
 (assert (not= 1 1 0) "not= 1")
 (assert (not= 0 1 1) "not= 2")
 
-# Check if abstract test works - d791077e2
+# Check if abstract test works
+# d791077e2
 (assert (abstract? stdout) "abstract? stdout")
 (assert (abstract? stdin) "abstract? stdin")
 (assert (abstract? stderr) "abstract? stderr")
@@ -84,7 +86,8 @@
 (assert (not (abstract? 3)) "not abstract? 3")
 (assert (not (abstract? 5)) "not abstract? 5")
 
-# Module path expansion - ff3bb6627
+# Module path expansion
+# ff3bb6627
 (setdyn :current-file "some-dir/some-file")
 (defn test-expand [path temp]
   (string (module/expand-path path temp)))
@@ -107,7 +110,8 @@
 (assert (= (test-expand "../././././abcd/../def.txt" ":all:") "../def.txt")
         "module/expand-path 8")
 
-# module/expand-path regression - issue #143 - e0fe8476a
+# module/expand-path regression
+# issue #143 - e0fe8476a
 (with-dyns [:syspath ".janet/.janet"]
   (assert (= (string (module/expand-path "hello" ":sys:/:all:.janet"))
              ".janet/.janet/hello.janet") "module/expand-path 1"))
