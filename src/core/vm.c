@@ -73,9 +73,11 @@
 #endif
 
 /* Commit and restore VM state before possible longjmp */
+#define fiber_curframe() (fiber->data + fiber->frame)
 #define vm_commit() do { janet_stack_frame(stack)->pc = pc; } while (0)
+#define vm_stack_restore() do { stack = fiber_curframe(); } while (0)
 #define vm_restore() do { \
-    stack = fiber->data + fiber->frame; \
+    vm_stack_restore(); \
     pc = janet_stack_frame(stack)->pc; \
     func = janet_stack_frame(stack)->func; \
 } while (0)
@@ -940,17 +942,17 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
 
     VM_OP(JOP_PUSH)
     janet_fiber_push(fiber, stack[D]);
-    stack = fiber->data + fiber->frame;
+    vm_stack_restore();
     vm_checkgc_pcnext();
 
     VM_OP(JOP_PUSH_2)
     janet_fiber_push2(fiber, stack[A], stack[E]);
-    stack = fiber->data + fiber->frame;
+    vm_stack_restore();
     vm_checkgc_pcnext();
 
     VM_OP(JOP_PUSH_3)
     janet_fiber_push3(fiber, stack[A], stack[B], stack[C]);
-    stack = fiber->data + fiber->frame;
+    vm_stack_restore();
     vm_checkgc_pcnext();
 
     VM_OP(JOP_PUSH_ARRAY) {
@@ -962,7 +964,7 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
             janet_panicf("expected %T, got %v", JANET_TFLAG_INDEXED, stack[D]);
         }
     }
-    stack = fiber->data + fiber->frame;
+    vm_stack_restore();
     vm_checkgc_pcnext();
 
     VM_OP(JOP_CALL) {
@@ -986,16 +988,16 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
                 janet_panicf("%v called with %d argument%s, expected %d",
                              callee, n, n == 1 ? "" : "s", func->def->arity);
             }
-            stack = fiber->data + fiber->frame;
+            vm_stack_restore();
             pc = func->def->bytecode;
             vm_checkgc_next();
         } else if (janet_checktype(callee, JANET_CFUNCTION)) {
             vm_commit();
             int32_t argc = fiber->stacktop - fiber->stackstart;
             janet_fiber_cframe(fiber, janet_unwrap_cfunction(callee));
-            Janet ret = janet_unwrap_cfunction(callee)(argc, fiber->data + fiber->frame);
+            Janet ret = janet_unwrap_cfunction(callee)(argc, fiber_curframe());
             janet_fiber_popframe(fiber);
-            stack = fiber->data + fiber->frame;
+            vm_stack_restore();
             stack[A] = ret;
             vm_checkgc_pcnext();
         } else {
@@ -1021,12 +1023,12 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
                 vm_do_trace(func, fiber->stacktop - fiber->stackstart, fiber->data + fiber->stackstart);
             }
             if (janet_fiber_funcframe_tail(fiber, func)) {
-                janet_stack_frame(fiber->data + fiber->frame)->pc = pc;
+                janet_stack_frame(fiber_curframe())->pc = pc;
                 int32_t n = fiber->stacktop - fiber->stackstart;
                 janet_panicf("%v called with %d argument%s, expected %d",
                              callee, n, n == 1 ? "" : "s", func->def->arity);
             }
-            stack = fiber->data + fiber->frame;
+            vm_stack_restore();
             pc = func->def->bytecode;
             vm_checkgc_next();
         } else {
@@ -1036,7 +1038,7 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
             if (janet_checktype(callee, JANET_CFUNCTION)) {
                 int32_t argc = fiber->stacktop - fiber->stackstart;
                 janet_fiber_cframe(fiber, janet_unwrap_cfunction(callee));
-                retreg = janet_unwrap_cfunction(callee)(argc, fiber->data + fiber->frame);
+                retreg = janet_unwrap_cfunction(callee)(argc, fiber_curframe());
                 janet_fiber_popframe(fiber);
             } else {
                 retreg = call_nonfn(fiber, callee);
@@ -1066,7 +1068,7 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
             vm_return(sig, retreg);
         }
         fiber->child = NULL;
-        stack = fiber->data + fiber->frame;
+        vm_stack_restore();
         stack[A] = retreg;
         vm_checkgc_pcnext();
     }
@@ -1106,7 +1108,7 @@ static JanetSignal run_vm(JanetFiber *fiber, Janet in) {
             vm_return(sig, retreg);
         }
         fiber->child = NULL;
-        stack = fiber->data + fiber->frame;
+        vm_stack_restore();
         stack[A] = retreg;
         vm_checkgc_pcnext();
     }
@@ -1238,7 +1240,7 @@ JanetSignal janet_step(JanetFiber *fiber, Janet in, Janet *out) {
     }
 
     /* Get PC for setting breakpoints */
-    uint32_t *pc = janet_stack_frame(fiber->data + fiber->frame)->pc;
+    uint32_t *pc = janet_stack_frame(fiber_curframe())->pc;
 
     /* Check current opcode (sans debug flag). This tells us where the next or next two candidate
      * instructions will be. Usually it's the next instruction in memory,
@@ -1415,7 +1417,7 @@ static JanetSignal janet_continue_no_check(JanetFiber *fiber, Janet in, Janet *o
     if (fiber->child) {
         if (janet_vm.root_fiber == NULL) janet_vm.root_fiber = fiber;
         JanetFiber *child = fiber->child;
-        uint32_t instr = (janet_stack_frame(fiber->data + fiber->frame)->pc)[0];
+        uint32_t instr = (janet_stack_frame(fiber_curframe())->pc)[0];
         janet_vm.stackn++;
         JanetSignal sig = janet_continue(child, in, &in);
         janet_vm.stackn--;
@@ -1450,7 +1452,7 @@ static JanetSignal janet_continue_no_check(JanetFiber *fiber, Janet in, Janet *o
 
     /* Handle new fibers being resumed with a non-nil value */
     if (old_status == JANET_STATUS_NEW && !janet_checktype(in, JANET_NIL)) {
-        Janet *stack = fiber->data + fiber->frame;
+        Janet *stack = fiber_curframe();
         JanetFunction *func = janet_stack_frame(stack)->func;
         if (func) {
             if (func->def->arity > 0) {
