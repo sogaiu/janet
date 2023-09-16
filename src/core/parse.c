@@ -151,6 +151,7 @@ DEF_PARSER_STACK(_pushstate, JanetParseState, states, statecount, statecap)
 #define PFLAG_ATSYM 0x10000
 #define PFLAG_COMMENT 0x20000
 #define PFLAG_TOKEN 0x40000
+#define PFLAG_BACKSLASH 0x80000
 
 static void pushstate(JanetParser *p, Consumer consumer, int flags) {
     JanetParseState s;
@@ -164,9 +165,13 @@ static void pushstate(JanetParser *p, Consumer consumer, int flags) {
 }
 
 static void popstate(JanetParser *p, Janet val) {
+    int discard = 0;
     for (;;) {
         JanetParseState top = p->states[--p->statecount];
         JanetParseState *newtop = p->states + p->statecount - 1;
+        if (discard != 0) {
+            return;
+        }
         /* Source mapping info */
         if (janet_checktype(val, JANET_TUPLE)) {
             janet_tuple_sm_line(janet_unwrap_tuple(val)) = (int32_t) top.line;
@@ -185,6 +190,11 @@ static void popstate(JanetParser *p, Janet val) {
             }
             push_arg(p, val);
             return;
+        } else if (newtop->flags & PFLAG_BACKSLASH) {
+            int c = newtop->flags & 0xFF;
+            if (c == '#') {
+                discard = 1;
+            }
         } else if (newtop->flags & PFLAG_READERMAC) {
             Janet *t = janet_tuple_begin(2);
             int c = newtop->flags & 0xFF;
@@ -589,6 +599,20 @@ static int longstring(JanetParser *p, JanetParseState *state, uint8_t c) {
 
 static int root(JanetParser *p, JanetParseState *state, uint8_t c);
 
+static int backslash(JanetParser *p, JanetParseState *state, uint8_t c) {
+    (void) state;
+    p->statecount--;
+    switch (c) {
+        default:
+            break;
+        case '#':
+            pushstate(p, root, PFLAG_BACKSLASH | '#');
+            return 1;
+    }
+    p->error = "unexpected character after backslash";
+    return 1;
+}
+
 static int atsign(JanetParser *p, JanetParseState *state, uint8_t c) {
     (void) state;
     p->statecount--;
@@ -627,6 +651,9 @@ static int root(JanetParser *p, JanetParseState *state, uint8_t c) {
             }
             pushstate(p, tokenchar, PFLAG_TOKEN);
             return 0;
+        case '\\':
+            pushstate(p, backslash, PFLAG_BACKSLASH);
+            return 1;
         case '\'':
         case ',':
         case ';':
@@ -1149,6 +1176,9 @@ static Janet janet_wrap_parse_state(JanetParseState *s, Janet *args,
         add_buffer = 1;
     } else if (s->flags & PFLAG_ATSYM) {
         type = "at";
+    } else if (s->flags & PFLAG_BACKSLASH) {
+        int c = s->flags & 0xFF;
+        type = (c == '#') ? "discard" : "<backslash>";
     } else if (s->flags & PFLAG_READERMAC) {
         int c = s->flags & 0xFF;
         type = (c == '\'') ? "quote" :
