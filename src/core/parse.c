@@ -376,42 +376,35 @@ static int stringend(JanetParser *p, JanetParseState *state) {
                 }
             }
         }
-        /* Adjust things a bit if there is a leading \r\n eol sequence. */
-        if (buflen > 1 && (bufstart[0] == '\r') &&
-                (bufstart[1] == '\n')) {
-            buflen--;
-            bufstart++;
-        }
-        /* Now reindent if able to, otherwise just drop leading newline. */
-        if (!reindent) {
-            if (buflen > 0 && bufstart[0] == '\n') {
-                buflen--;
-                bufstart++;
-            }
-        } else {
+        /* Reindent if needed. */
+        if (reindent) {
             uint8_t *w = bufstart;
             r = bufstart;
+            uint8_t at_newline = 0;
             while (r < end) {
-                if (*r == '\n') {
-                    if (r == bufstart) {
-                        /* Skip leading newline */
-                        r++;
-                    } else {
-                        *w++ = *r++;
-                    }
+                at_newline = (*r == '\n') ? 1 : 0;
+                *w++ = *r++;
+                if (at_newline) {
                     for (int32_t j = 0; (r < end) && (*r != '\n') && (j < indent_col); j++, r++);
-                } else {
-                    *w++ = *r++;
                 }
             }
             buflen = (int32_t)(w - bufstart);
         }
-        /* Check for end of line sequence so we can remove it */
-        if (buflen > 0 && bufstart[buflen - 1] == '\n') {
+        /* Skip leading eol sequence if needed. */
+        if (buflen > 0 && bufstart[0] == '\n') {
             buflen--;
-            if (buflen > 0 && bufstart[buflen - 1] == '\r') {
-                buflen--;
-            }
+            bufstart++;
+        } else if (buflen > 1 && (bufstart[0] == '\r') &&
+                   (bufstart[1] == '\n')) {
+            buflen -= 2;
+            bufstart += 2;
+        }
+        /* Remove trailing eol sequence if needed. */
+        if (buflen > 1 && (bufstart[buflen - 2] == '\r') &&
+                (bufstart[buflen - 1] == '\n')) {
+            buflen -= 2;
+        } else if (buflen > 0 && bufstart[buflen - 1] == '\n') {
+            buflen--;
         }
     }
     if (state->flags & PFLAG_BUFFER) {
