@@ -368,13 +368,20 @@ static int stringend(JanetParser *p, JanetParseState *state) {
         int reindent = 1;
         while (reindent && (r < end)) {
             if (*r++ == '\n') {
-                for (int32_t j = 0; (r < end) && (*r != '\n') && (j < indent_col); j++, r++) {
+                for (int32_t j = 0; (r < end) && (*r != '\n') &&
+                        (*r != '\r') && (j < indent_col); j++, r++) {
                     if (*r != ' ') {
                         reindent = 0;
                         break;
                     }
                 }
             }
+        }
+        /* Adjust things a bit if there is a leading \r\n eol sequence. */
+        if (buflen > 1 && (bufstart[0] == '\r') &&
+                (bufstart[1] == '\n')) {
+            buflen--;
+            bufstart++;
         }
         /* Now reindent if able to, otherwise just drop leading newline. */
         if (!reindent) {
@@ -393,16 +400,20 @@ static int stringend(JanetParser *p, JanetParseState *state) {
                     } else {
                         *w++ = *r++;
                     }
-                    for (int32_t j = 0; (r < end) && (*r != '\n') && (j < indent_col); j++, r++);
+                    for (int32_t j = 0; (r < end) && (*r != '\n') &&
+                            (*r != '\r') && (j < indent_col); j++, r++);
                 } else {
                     *w++ = *r++;
                 }
             }
             buflen = (int32_t)(w - bufstart);
         }
-        /* Check for trailing newline character so we can remove it */
+        /* Check for end of line sequence so we can remove it */
         if (buflen > 0 && bufstart[buflen - 1] == '\n') {
             buflen--;
+            if (buflen > 0 && bufstart[buflen - 1] == '\r') {
+                buflen--;
+            }
         }
     }
     if (state->flags & PFLAG_BUFFER) {
