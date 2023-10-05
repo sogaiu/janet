@@ -402,6 +402,10 @@ static int stringend(JanetParser *p, JanetParseState *state) {
                     }
                     for (int32_t j = 0; (r < end) && (*r != '\n') &&
                             (*r != '\r') && (j < indent_col); j++, r++);
+                } else if ((*r == '\r') &&
+                           (r + 1 < end) && (*(r + 1) == '\n')) {
+                    /* Skip carriage return that is right before a newline */
+                    r++;
                 } else {
                     *w++ = *r++;
                 }
