@@ -107,6 +107,38 @@
 (check-indent "\n    Hello, world!\n   dedented text\n    " 4)
 (check-indent "\n    Hello, world!\n    indented text\n    " 4)
 
+# Long-string line termination handling
+#
+# #1302
+(def cr-lf "\r\n")
+
+(assert (= (parse (string "``a line" cr-lf
+                          "another line``"))
+           "a line\nanother line")
+        "replace CR LF with LF")
+
+(assert (= (parse (string "``" cr-lf
+                          "a line" cr-lf
+                          "another line" cr-lf
+                          "``"))
+           "a line\nanother line")
+        "replace CR LF with LF, strip leading / trailing CR LF")
+
+(assert (= (parse (string "  ``" cr-lf
+                          "  a line" cr-lf
+                          "  another line" cr-lf
+                          "  ``"))
+           "a line\nanother line")
+        "replace CR LF with LF, dedent")
+
+(assert (= (parse (string "``" cr-lf
+                          "A" cr-lf
+                          "\rJ" cr-lf
+                          "Z" cr-lf
+                          "``"))
+           "A\n\rJ\nZ")
+        "replace CR LF with LF, preserve interior CR")
+
 # Symbols with @ character
 # d68eae9
 (def @ 1)
