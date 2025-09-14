@@ -149,8 +149,13 @@ if "%WIXARCH%"=="aarch64" (
     set WIXARCH=arm64
 )
 
-%WIXBIN%candle.exe tools\msi\janet.wxs -arch %WIXARCH% -out build\
-%WIXBIN%light.exe "-sice:ICE38" -b tools\msi -ext WixUIExtension build\janet.wixobj -out janet-%RELEASE_VERSION%-windows-%BUILDARCH%-installer.msi
+set WIXEXTVER=6.0.2
+
+cd tools\msi
+%WIXBIN%wix extension add WixToolset.UI.wixext/%WIXEXTVER%
+cd ..\..
+%WIXBIN%wix build -arch %WIXARCH% -bindpath .\tools\msi -ext .\tools\msi\.wix\extensions\WixToolset.UI.wixext\%WIXEXTVER%\wixext6\WixToolset.UI.wixext.dll .\tools\msi\janet.wxs -out janet-%RELEASE_VERSION%-windows-%BUILDARCH%-installer.msi
+
 exit /b 0
 
 @rem Run the installer. (Installs to the local user with default settings)
